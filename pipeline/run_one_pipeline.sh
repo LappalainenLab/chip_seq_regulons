@@ -36,6 +36,15 @@ bedtools intersect -wa \
 			-v > "data/chipseq_data/${CELLS}/remap2022_${CELLS}_macs2_hg38_v1_0_no_black.bed"
 echo "Removed blacklist regions"
 
+if [ ! -d "data/tss_mapping" ] 
+then
+	mkdir data/tss_mapping
+fi
+
+if [ ! -d "data/mappings" ] 
+then 
+        mkdir data/mappings
+fi 
 
 # Sort BED files
 sort -k1,1 -k2,2n "data/chipseq_data/${CELLS}/remap2022_${CELLS}_macs2_hg38_v1_0_no_black.bed" > \
