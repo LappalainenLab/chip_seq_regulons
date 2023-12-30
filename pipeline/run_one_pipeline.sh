@@ -8,14 +8,14 @@
 cd /proj/lappalainen_lab1/users/marii/chip*/
 
 # Loading modules
-module load R_packages
+module load R_packages/4.1.1
 
 
 # Configure
-CELLS="try"
-RNA_FILES="ENCFF561BRN,ENCFF855YXZ,ENCFF152QTW"
-DNASE_FILE="ENCFF835KCG"
-ATAC_FILE="ENCFF821OEF"
+CELLS="try_K562"
+RNA_FILES="ENCFF823JHX,ENCFF940GYO"
+DNASE_FILE="ENCFF274YGF"
+ATAC_FILE="ENCFF558BLC"
 
 echo "Starting the pipeline"
 
