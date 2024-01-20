@@ -1,5 +1,5 @@
 library(data.table)
-library(SuperExactTest)
+#library(SuperExactTest)
 library(here)
 library(jtools)
 library(stringr)

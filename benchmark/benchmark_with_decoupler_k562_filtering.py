@@ -9,7 +9,7 @@ mat = pd.read_csv('data/KnockTF2/knockTF_expr.csv', index_col=0)
 obs = pd.read_csv('data/KnockTF2/knockTF_meta.csv', index_col=0)
 
 # Read TF-target mapping data
-data = pd.read_table('data/regulons/TF_target_mapping_filtered_merged_K562_with_motifs_with_ppi_with_dnase_with_atac_with_dist_score.tsv', sep="\t")
+data = pd.read_table('data/regulons/K562_all_regulons.tsv', sep="\t")
 
 # Filter the knockout experiments based on logFC and cell line
 msk = obs['logFC'] < -1
@@ -41,6 +41,7 @@ s2kb_dnase = data.loc[data.is_method_3 & data.is_dnase, ["tf", "gene_symbol"]].d
 s2mb_atac = data.loc[data.is_method_1 & data.is_atac, ["tf", "gene_symbol"]].drop_duplicates(["tf", "gene_symbol"])
 m2kb_atac = data.loc[data.is_method_2 & data.is_atac, ["tf", "gene_symbol"]].drop_duplicates(["tf", "gene_symbol"])
 s2kb_atac = data.loc[data.is_method_3 & data.is_atac, ["tf", "gene_symbol"]].drop_duplicates(["tf", "gene_symbol"])
+
 
 # Rename columns
 for dataset in [s2mb, m2kb, s2kb, s2mb_motif, m2kb_motif, s2kb_motif, s2mb_dnase, \
@@ -100,4 +101,4 @@ decouple_kws = {
 df = dc.benchmark(mat, obs, nets, perturb='TF', sign=-1, verbose=True, decouple_kws=decouple_kws)
 
 # Save the results to a TSV file
-df.to_csv("data/enrich_analysis/k562_filtering_benchmark.tsv", sep="\t", index=False)
+df.to_csv("data/2-plot_decoupler_filter_benchmark_across_methods/k562_filtering_benchmark.tsv", sep="\t", index=False)

@@ -11,8 +11,8 @@ setwd("/proj/lappalainen_lab1/users/marii/chip_seq_ann")
 
 
 # Define data directories
-data_dir = "data/remap2022/data/"
-processed_data_dir = "data/enrich_analysis/"
+data_dir = "data/regulons/"
+processed_data_dir = "data/1-dataset_stats/"
 
 # List of cell lines
 cells = c("K562", "HepG2", "MCF7", "GM12878")
@@ -20,14 +20,16 @@ cells = c("K562", "HepG2", "MCF7", "GM12878")
 # Iterate through each cell line
 foreach (ct = cells) %do% {
 	# Define the input file
-	file = paste0(data_dir, "TF_target_mapping_filtered_merged_", ct, "_with_motifs_with_ppi_with_dnase_with_atac_with_dist_score.tsv")
-	
+	file = paste0(data_dir, ct, "_all_regulons.tsv")	
 	# Read the data
 	data = fread(file, nThread=10)
 
 	# Filter the data based on method conditions
-	data %>% filter(is_S2Mb | is_M2Kb | is_S2Kb) -> data_full
-	
+	data %>% filter(is_method_1 | is_method_2 | is_method_3) -> data_full
+	data_full <- rename(data, all_of(c(is_S2Mb = "is_method_1",
+					is_M2Kb = "is_method_2",
+					is_S2Kb = "is_method_3")))
+        print(colnames(data))
 	# Iterate through each method
 	foreach(m = c("S2Mb", "M2Kb", "S2Kb")) %do% {
 		# Filter interactions for the current regulon

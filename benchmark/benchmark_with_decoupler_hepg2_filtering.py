@@ -9,7 +9,7 @@ mat = pd.read_csv('data/KnockTF2/knockTF_expr.csv', index_col=0)
 obs = pd.read_csv('data/KnockTF2/knockTF_meta.csv', index_col=0)
 
 # Read TF-target mapping data
-data = pd.read_table('data/regulons/TF_target_mapping_filtered_merged_HepG2_with_motifs_with_ppi_with_dnase_with_atac_with_dist_score.tsv', sep="\t")
+data = pd.read_table('data/regulons/HepG2_all_regulons.tsv', sep="\t")
 
 # Filter the knockout experiments based on logFC and cell line
 msk = obs['logFC'] < -1
@@ -101,4 +101,4 @@ decouple_kws = {
 df = dc.benchmark(mat, obs, nets, perturb='TF', sign=-1, verbose=True, decouple_kws=decouple_kws)
 
 # Save the results to a TSV file
-df.to_csv("data/enrich_analysis/hepg2_filtering_benchmark.tsv", sep="\t", index=False)
+df.to_csv("data/2-plot_decoupler_filter_benchmark_across_methods/hepg2_filtering_benchmark.tsv", sep="\t", index=False)

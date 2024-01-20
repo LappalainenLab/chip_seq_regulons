@@ -9,7 +9,7 @@ mat = pd.read_csv('data/KnockTF2/knockTF_expr.csv', index_col=0)
 obs = pd.read_csv('data/KnockTF2/knockTF_meta.csv', index_col=0)
 
 # Read TF-target mapping data
-data = pd.read_table('data/regulons/K562_regulon.tsv', sep="\t")
+data = pd.read_table('data/regulons/K562_all_regulons.tsv', sep="\t")
 
 # Filter the knockout experiments based on logFC and cell line
 msk = obs['logFC'] < -1
@@ -26,13 +26,13 @@ s2mb_atac.columns = ["source", "target"]
 m2kb_atac.columns = ["source", "target"]
 
 # Read and preprocess other regulons
-regnet = pd.read_table("data/trans_networks/regnet_human.tsv", sep="\t", header=None).iloc[:,[0, 2]].drop_duplicates()
+regnet = pd.read_table("data/regulons/regnet_human.tsv", sep="\t", header=None).iloc[:,[0, 2]].drop_duplicates()
 regnet.columns = ["source", "target"]
 
-trrust = pd.read_table("data/trans_networks/trrust_rawdata.human.tsv", sep="\t", header=None).iloc[:,0:2].drop_duplicates()
+trrust = pd.read_table("data/regulons/trrust_rawdata.human.tsv", sep="\t", header=None).iloc[:,0:2].drop_duplicates()
 trrust.columns = ["source", "target"]
 
-chip_atlas = pd.read_table("data/trans_networks/ChIP-Atlas_target_genes_K562.tsv", sep="\t").drop_duplicates()
+chip_atlas = pd.read_table("data/regulons/ChIP-Atlas_target_genes_K562.tsv", sep="\t").drop_duplicates()
 chip_atlas.columns = ["source", "target"]
 
 collectri = dc.get_collectri(organism='human', split_complexes=False)
@@ -87,4 +87,4 @@ print(m2kb.loc[(m2kb.method == "consensus_estimate") & (m2kb.metric == "mcauprc"
 # M2Kb mean MCAUPRC 0.587219
 
 # Save the results to a TSV file
-df.to_csv("data/enrich_analysis/k562_comparison_benchmark.tsv", sep="\t", index=False)
+df.to_csv("data/2-plot_decoupler_comparison_benchmark_across_cells/k562_comparison_benchmark.tsv", sep="\t", index=False)

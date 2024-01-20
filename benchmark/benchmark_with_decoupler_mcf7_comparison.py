@@ -9,7 +9,7 @@ mat = pd.read_csv('data/KnockTF2/knockTF_expr.csv', index_col=0)
 obs = pd.read_csv('data/KnockTF2/knockTF_meta.csv', index_col=0)
 
 # Read TF-target mapping data
-data = pd.read_table('data/regulons/MCF7_regulon.tsv', sep="\t")
+data = pd.read_table('data/regulons/MCF7_all_regulons.tsv', sep="\t")
 
 # Filter the knockout experiments based on logFC and cell line
 msk = obs['logFC'] < -1
@@ -26,26 +26,26 @@ s2mb_dnase.columns = ["source", "target"]
 m2kb_dnase.columns = ["source", "target"]
 
 # Read and preprocess other regulons
-regnet = pd.read_table("data/trans_networks/regnet_human.tsv", sep="\t", header=None).iloc[:,[0, 2]].drop_duplicates()
+regnet = pd.read_table("data/regulons/regnet_human.tsv", sep="\t", header=None).iloc[:,[0, 2]].drop_duplicates()
 regnet.columns = ["source", "target"]
 
-trrust = pd.read_table("data/trans_networks/trrust_rawdata.human.tsv", sep="\t", header=None).iloc[:,0:2].drop_duplicates()
+trrust = pd.read_table("data/regulons/trrust_rawdata.human.tsv", sep="\t", header=None).iloc[:,0:2].drop_duplicates()
 trrust.columns = ["source", "target"]
 
-chip_atlas = pd.read_table("data/trans_networks/ChIP-Atlas_target_genes_MCF7.tsv", sep="\t").drop_duplicates()
+chip_atlas = pd.read_table("data/regulons/ChIP-Atlas_target_genes_MCF7.tsv", sep="\t").drop_duplicates()
 chip_atlas.columns = ["source", "target"]
 
 collectri = dc.get_collectri(organism='human', split_complexes=False)
 dorothea = dc.get_dorothea(organism='human')
 
 tfs = set.intersection(
-    set(collectri.source), set(m2kb_atac.source), set(regnet.source),
+    set(collectri.source), set(m2kb_dnase.source), set(regnet.source),
     set(trrust.source), set(chip_atlas.source), set(dorothea.source)
 )
  
 # Filter regulons to shared TFs
-s2mb_atac = s2mb_atac[s2mb_atac.source.isin(tfs)]
-m2kb_atac = m2kb_atac[m2kb_atac.source.isin(tfs)]
+s2mb_dnase = s2mb_dnase[s2mb_dnase.source.isin(tfs)]
+m2kb_dnase = m2kb_dnase[m2kb_dnase.source.isin(tfs)]
 chip_atlas = chip_atlas[chip_atlas.source.isin(tfs)]
 regnet = regnet[regnet.source.isin(tfs)]
 trrust = trrust[trrust.source.isin(tfs)]
@@ -87,4 +87,4 @@ print(m2kb.loc[(m2kb.method == "consensus_estimate") & (m2kb.metric == "mcauprc"
 # M2Kb mean MCAUPRC 0.625776
 
 # Save the results to a TSV file
-df.to_csv("data/enrich_analysis/mcf7_comparison_benchmark.tsv", sep="\t", index=False)
+df.to_csv("data/2-plot_decoupler_comparison_benchmark_across_cells/mcf7_comparison_benchmark.tsv", sep="\t", index=False)

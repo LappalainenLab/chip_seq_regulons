@@ -23,7 +23,7 @@ cell_line = c("HepG2", "MCF7", "GM12878", "K562")
 foreach(cl = cell_line) %do% {
 	dodge <- position_dodge(width=0.9)
 
-	input_file <- sprintf("data/s3-network_enrichment/network_enrich_scores_%s.tsv", cl)
+	input_file <- sprintf("data/s3-network_enrichment/enrich_scores_remap_all_tfs_%s.tsv", cl)
 
 	enrich_scores = fread(input_file)
 	ppi_plot_file <- sprintf("plots/s3-network_enrichment/enrich_scores_remap_all_tfs_ppi_%s.svg", cl)
