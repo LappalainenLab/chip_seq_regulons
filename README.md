@@ -6,8 +6,8 @@ This repo contains code used in preprint Specifying cellular context of transcri
 
 ```
 git clone https://github.com/LappalainenLab/chip_seq_regulons.git
-conda create ***
-conda activate ***
+conda create --name chip_seq_reg --file environment.txt
+conda activate chip_seq_reg
 ```
 
 ### Annotation pipeline:
@@ -58,3 +58,8 @@ Scripts to reproduce figures from the manuscripts can be run by
 ```
 Rscript figures/manuscript/{script_name}.R
 ```
+
+## Citation
+> Minaeva, M., Domingo, J., Rentzsch, P., & Lappalainen, T. (2024). 
+> Specifying cellular context of transcription factor regulons for exploring context-specific gene regulation programs.
+> bioRxiv, 2023-12. https://doi.org/10.1101/2023.12.31.573765
