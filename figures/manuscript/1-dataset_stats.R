@@ -27,9 +27,9 @@ source("figures/fig_style.R")
 
 
 
-temp1 = fread("data/1-dataset_stats/per_gene_stats_s2mb_GM12878.tsv")
-temp2 = fread("data/1-dataset_stats/per_gene_stats_m2kb_GM12878.tsv")
-temp3 = fread("data/1-dataset_stats/per_gene_stats_s2kb_GM12878.tsv")
+temp1 = fread("data/1-dataset_stats/per_gene_stats_S2Mb_GM12878.tsv")
+temp2 = fread("data/1-dataset_stats/per_gene_stats_M2Kb_GM12878.tsv")
+temp3 = fread("data/1-dataset_stats/per_gene_stats_S2Kb_GM12878.tsv")
 temp1$method = "S2Mb"
 temp2$method = "M2Kb"
 temp3$method = "S2Kb"
@@ -50,9 +50,9 @@ plot = ggplot(temp, aes(x = n_tfs, color = factor(method, levels = c("S2Mb", "M2
 
 ggsave(filename = "plots/1-dataset_stats/N_tfs_per_gene_GM12878.svg", plot = plot, device = "svg", dpi = 720, width=70, height=70, units="mm")
 
-temp1 = fread("data/1-dataset_stats/per_tf_stats_s2mb_GM12878.tsv")
-temp2 = fread("data/1-dataset_stats/per_tf_stats_m2kb_GM12878.tsv")
-temp3 = fread("data/1-dataset_stats/per_tf_stats_s2kb_GM12878.tsv")
+temp1 = fread("data/1-dataset_stats/per_tf_stats_S2Mb_GM12878.tsv")
+temp2 = fread("data/1-dataset_stats/per_tf_stats_M2Kb_GM12878.tsv")
+temp3 = fread("data/1-dataset_stats/per_tf_stats_S2Kb_GM12878.tsv")
 temp1$method = "S2Mb"
 temp2$method = "M2Kb"
 temp3$method = "S2Kb"
@@ -78,9 +78,9 @@ ggsave(filename = "plots/1-dataset_stats/N_genes_per_tf_GM12878.svg", plot = plo
 #HepG2
  
  
-temp1 = fread("data/1-dataset_stats/per_gene_stats_s2mb_HepG2.tsv")
-temp2 = fread("data/1-dataset_stats/per_gene_stats_m2kb_HepG2.tsv")
-temp3 = fread("data/1-dataset_stats/per_gene_stats_s2kb_HepG2.tsv")
+temp1 = fread("data/1-dataset_stats/per_gene_stats_S2Mb_HepG2.tsv")
+temp2 = fread("data/1-dataset_stats/per_gene_stats_M2Kb_HepG2.tsv")
+temp3 = fread("data/1-dataset_stats/per_gene_stats_S2Kb_HepG2.tsv")
 temp1$method = "S2Mb"
 temp2$method = "M2Kb"
 temp3$method = "S2Kb"
@@ -101,9 +101,9 @@ plot = ggplot(temp, aes(x = n_tfs, color = factor(method, levels = c("S2Mb", "M2
 
 ggsave(filename = "plots/1-dataset_stats/N_tfs_per_gene_HepG2.svg", plot = plot, device = "svg", dpi = 720, width=70, height=70, units="mm")
 
-temp1 = fread("data/1-dataset_stats/per_tf_stats_s2mb_HepG2.tsv")
-temp2 = fread("data/1-dataset_stats/per_tf_stats_m2kb_HepG2.tsv")
-temp3 = fread("data/1-dataset_stats/per_tf_stats_s2kb_HepG2.tsv")
+temp1 = fread("data/1-dataset_stats/per_tf_stats_S2Mb_HepG2.tsv")
+temp2 = fread("data/1-dataset_stats/per_tf_stats_M2Kb_HepG2.tsv")
+temp3 = fread("data/1-dataset_stats/per_tf_stats_S2Kb_HepG2.tsv")
 temp1$method = "S2Mb"
 temp2$method = "M2Kb"
 temp3$method = "S2Kb"
@@ -127,9 +127,9 @@ ggsave(filename = "plots/1-dataset_stats/N_genes_per_tf_HepG2.svg", plot = plot,
 #K562
 
 
-temp1 = fread("data/1-dataset_stats/per_gene_stats_s2mb_K562.tsv")
-temp2 = fread("data/1-dataset_stats/per_gene_stats_m2kb_K562.tsv")
-temp3 = fread("data/1-dataset_stats/per_gene_stats_s2kb_K562.tsv")
+temp1 = fread("data/1-dataset_stats/per_gene_stats_S2Mb_K562.tsv")
+temp2 = fread("data/1-dataset_stats/per_gene_stats_M2Kb_K562.tsv")
+temp3 = fread("data/1-dataset_stats/per_gene_stats_S2Kb_K562.tsv")
 temp1$method = "S2Mb"
 temp2$method = "M2Kb"
 temp3$method = "S2Kb"
@@ -151,9 +151,9 @@ plot = ggplot(temp, aes(x = n_tfs, color = factor(method, levels = c("S2Mb", "M2
 ggsave(filename = "plots/1-dataset_stats/N_tfs_per_gene_K562.svg", plot = plot, device = "svg", dpi = 720, width=70, height=70, units="mm")
 
 
-temp1 = fread("data/1-dataset_stats/per_tf_stats_s2mb_K562.tsv")
-temp2 = fread("data/1-dataset_stats/per_tf_stats_m2kb_K562.tsv")
-temp3 = fread("data/1-dataset_stats/per_tf_stats_s2kb_K562.tsv")
+temp1 = fread("data/1-dataset_stats/per_tf_stats_S2Mb_K562.tsv")
+temp2 = fread("data/1-dataset_stats/per_tf_stats_M2Kb_K562.tsv")
+temp3 = fread("data/1-dataset_stats/per_tf_stats_S2Kb_K562.tsv")
 temp1$method = "S2Mb"
 temp2$method = "M2Kb"
 temp3$method = "S2Kb"
@@ -176,9 +176,9 @@ ggsave(filename = "plots/1-dataset_stats/N_genes_per_tf_K562.svg", plot = plot, 
 #MCF7
 
 
-temp1 = fread("data/1-dataset_stats/per_gene_stats_s2mb_MCF7.tsv")
-temp2 = fread("data/1-dataset_stats/per_gene_stats_m2kb_MCF7.tsv")
-temp3 = fread("data/1-dataset_stats/per_gene_stats_s2kb_MCF7.tsv")
+temp1 = fread("data/1-dataset_stats/per_gene_stats_S2Mb_MCF7.tsv")
+temp2 = fread("data/1-dataset_stats/per_gene_stats_M2Kb_MCF7.tsv")
+temp3 = fread("data/1-dataset_stats/per_gene_stats_S2Kb_MCF7.tsv")
 temp1$method = "S2Mb"
 temp2$method = "M2Kb"
 temp3$method = "S2Kb"
@@ -200,9 +200,9 @@ plot = ggplot(temp, aes(x = n_tfs, color = factor(method, levels = c("S2Mb", "M2
 ggsave(filename = "plots/1-dataset_stats/N_tfs_per_gene_MCF7.svg", plot = plot, device = "svg", dpi = 720, width=70, height=70, units="mm")
 
 
-temp1 = fread("data/1-dataset_stats/per_tf_stats_s2mb_MCF7.tsv")
-temp2 = fread("data/1-dataset_stats/per_tf_stats_m2kb_MCF7.tsv")
-temp3 = fread("data/1-dataset_stats/per_tf_stats_s2kb_MCF7.tsv")
+temp1 = fread("data/1-dataset_stats/per_tf_stats_S2Mb_MCF7.tsv")
+temp2 = fread("data/1-dataset_stats/per_tf_stats_M2Kb_MCF7.tsv")
+temp3 = fread("data/1-dataset_stats/per_tf_stats_S2Kb_MCF7.tsv")
 temp1$method = "S2Mb"
 temp2$method = "M2Kb"
 temp3$method = "S2Kb"
