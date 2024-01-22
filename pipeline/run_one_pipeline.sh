@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Configure
-CELLS="try_K562" # Name of the cell type consistent with ReMap2022 file name
-RNA_FILES="ENCFF823JHX,ENCFF940GYO" # Comma-separated RNA-Seq replicate data accessions 
-DNASE_FILE="ENCFF274YGF" # DNAse-Seq data accession
-ATAC_FILE="ENCFF558BLC" # ATAC-Seq data accession
+CELLS="sample_cell" # Name of the cell type consistent with ReMap2022 file name
+RNA_FILES="sample_RNA_1,sample_RNA_2" # Comma-separated RNA-Seq replicate data accessions 
+DNASE_FILE="sample_DNAse" # DNAse-Seq data accession
+ATAC_FILE="sample_ATAC" # ATAC-Seq data accession
 
 DATA_PATH="./data"
 CHIP_FILE_NAME="remap2022_${CELLS}_macs2_hg38_v1_0"
