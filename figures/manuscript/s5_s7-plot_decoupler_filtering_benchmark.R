@@ -1,6 +1,3 @@
-
-
-
 #------------------------------------------------------------------------------
 # This script visualizes results of benchmarking of different filtering 
 # strategies for our approaches
@@ -37,7 +34,7 @@ foreach(ct = cells) %do% {
 		filter(method == "consensus_estimate")-> to_plot
 	
 	to_plot$group = factor(to_plot$group, levels=c("S2Mb", "M2Kb", "S2Kb"))
-	to_plot$filter =  factor(to_plot$filter, levels=c("random", "no", "exp", "dnase", "atac"))
+	to_plot$filter =  factor(to_plot$filter, levels=c("random", "no", "motif", "open", "ccre"))
 	p1 = ggplot(data = to_plot, aes(x = mcauroc, y = mcauprc, shape = filter)) +
 		geom_point() + 
 		facet_wrap(~group) +

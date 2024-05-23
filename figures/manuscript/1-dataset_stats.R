@@ -44,9 +44,9 @@ plot = ggplot(temp, aes(x = n_tfs, color = factor(method, levels = c("S2Mb", "M2
         theme_pubr(legend="none") + 
 	theme(legend.position = "none", axis.title = element_text(size= 11), axis.text = element_text(size = 9)) + ylab("Genes") + xlab("Number of TFs per gene") +
         scale_y_continuous(labels = function(x) format(x, scientific = TRUE)) +
-	annotate("text", x = 90, y=4500, label=paste0("S2Kb: ", round(mean(temp3$n_tfs), 0))) +
-	annotate("text", x = 90, y=5250, label=paste0("M2Kb: ", round(mean(temp2$n_tfs), 0))) +
-        annotate("text", x = 90, y=6000, label=paste0("S2Mb: ", round(mean(temp1$n_tfs), 0)))
+	annotate("text", x = 90, y=1500, label=paste0("S2Kb: ", round(mean(temp3$n_tfs), 0))) +
+	annotate("text", x = 90, y=2000, label=paste0("M2Kb: ", round(mean(temp2$n_tfs), 0))) +
+        annotate("text", x = 90, y=2500, label=paste0("S2Mb: ", round(mean(temp1$n_tfs), 0)))
 
 ggsave(filename = "plots/1-dataset_stats/N_tfs_per_gene_GM12878.svg", plot = plot, device = "svg", dpi = 720, width=70, height=70, units="mm")
 
@@ -95,9 +95,9 @@ plot = ggplot(temp, aes(x = n_tfs, color = factor(method, levels = c("S2Mb", "M2
         theme_pubr(legend="none") + 
 	theme(legend.position = "none", axis.title = element_text(size= 11), axis.text = element_text(size = 9)) + ylab("Genes") + xlab("Number of TFs per gene") +
         scale_y_continuous(labels = function(x) format(x, scientific = TRUE)) +
-	annotate("text", x = 180, y=7500, label=paste0("S2Kb: ", round(mean(temp3$n_tfs), 0))) +
-        annotate("text", x = 180, y=8500, label=paste0("M2Kb: ", round(mean(temp2$n_tfs), 0))) +
-        annotate("text", x = 180, y=9500, label=paste0("S2Mb: ", round(mean(temp1$n_tfs), 0)))
+	annotate("text", x = 180, y=1500, label=paste0("S2Kb: ", round(mean(temp3$n_tfs), 0))) +
+        annotate("text", x = 180, y=2000, label=paste0("M2Kb: ", round(mean(temp2$n_tfs), 0))) +
+        annotate("text", x = 180, y=2500, label=paste0("S2Mb: ", round(mean(temp1$n_tfs), 0)))
 
 ggsave(filename = "plots/1-dataset_stats/N_tfs_per_gene_HepG2.svg", plot = plot, device = "svg", dpi = 720, width=70, height=70, units="mm")
 
@@ -144,9 +144,9 @@ plot = ggplot(temp, aes(x = n_tfs, color = factor(method, levels = c("S2Mb", "M2
         theme_pubr(legend="none") + 
         scale_y_continuous(labels = function(x) format(x, scientific = TRUE)) +
 	theme(legend.position = "none", axis.title = element_text(size= 11), axis.text = element_text(size = 9)) + ylab("Genes") + xlab("Number of TFs per gene") +
-        annotate("text", x = 250, y=5500, label=paste0("S2Kb: ", round(mean(temp3$n_tfs), 0))) +
-        annotate("text", x = 250, y=7500, label=paste0("M2Kb: ", round(mean(temp2$n_tfs), 0))) +
-        annotate("text", x = 250, y=9500, label=paste0("S2Mb: ", round(mean(temp1$n_tfs), 0)))
+        annotate("text", x = 250, y=1500, label=paste0("S2Kb: ", round(mean(temp3$n_tfs), 0))) +
+        annotate("text", x = 250, y=2000, label=paste0("M2Kb: ", round(mean(temp2$n_tfs), 0))) +
+        annotate("text", x = 250, y=2500, label=paste0("S2Mb: ", round(mean(temp1$n_tfs), 0)))
 
 ggsave(filename = "plots/1-dataset_stats/N_tfs_per_gene_K562.svg", plot = plot, device = "svg", dpi = 720, width=70, height=70, units="mm")
 
@@ -193,9 +193,9 @@ plot = ggplot(temp, aes(x = n_tfs, color = factor(method, levels = c("S2Mb", "M2
         theme_pubr(legend="none") + 
 	theme(legend.position = "none", axis.title = element_text(size= 11), axis.text = element_text(size = 9)) + ylab("Genes") + xlab("Number of TFs per gene") +
         scale_y_continuous(labels = function(x) format(x, scientific = TRUE)) +        
-	annotate("text", x = 120, y=6500, label=paste0("S2Kb: ", round(mean(temp3$n_tfs), 0))) +
-        annotate("text", x = 120, y=7500, label=paste0("M2Kb: ", round(mean(temp2$n_tfs), 0))) +
-        annotate("text", x = 120, y=8500, label=paste0("S2Mb: ", round(mean(temp1$n_tfs), 0)))
+	annotate("text", x = 120, y=1500, label=paste0("S2Kb: ", round(mean(temp3$n_tfs), 0))) +
+        annotate("text", x = 120, y=2000, label=paste0("M2Kb: ", round(mean(temp2$n_tfs), 0))) +
+        annotate("text", x = 120, y=2500, label=paste0("S2Mb: ", round(mean(temp1$n_tfs), 0)))
 
 ggsave(filename = "plots/1-dataset_stats/N_tfs_per_gene_MCF7.svg", plot = plot, device = "svg", dpi = 720, width=70, height=70, units="mm")
 

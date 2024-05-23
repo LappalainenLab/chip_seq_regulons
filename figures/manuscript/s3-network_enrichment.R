@@ -38,12 +38,12 @@ foreach(cl = cell_line) %do% {
 			outlier.shape=NA, 
 			add.params = list(fill = "white"))+
 		geom_pwc(method = "wilcox_test", label = "p.adj.signif",
-                	        p.adjust.method = "fdr", vjust = 0.1, 
+                	        p.adjust.method = "fdr", vjust = 10.0, 
 				label.size = 2, bracket.nudge.y = -0.43, step.increase = 0.01, tip.length = 0, hide.ns=T) +
 		ylab("Enrichment Score") +
 		xlab("Method") +
 		labs(fill='Method') +
-		ylim(-1, 13) +
+		#ylim(-1, 13) +
 		scale_fill_oi(palette = "black_original", order=c(6, 4, 7)) +
 		theme(axis.text.x = element_text(size=9),
 			legend.position = "none",

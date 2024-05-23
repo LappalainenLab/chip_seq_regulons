@@ -30,7 +30,7 @@ foreach(cl = cell_line) %do% {
 	data %>% filter((method == "consensus_estimate") & (metric == "mcauprc")) -> data
 
 	data$group = factor(data$group, levels=c("S2Mb", "M2Kb", "S2Kb"))
-	data$filter =  factor(data$filter, levels=c("random", "no", "motif", "dnase", "atac"), labels=c("shuffled \nnetwork", "no filter", "motif", "dnase", "atac"))
+	data$filter =  factor(data$filter, levels=c("random", "no", "motif", "open", "ccre"), labels=c("shuffled \nnetwork", "no filter", "motif", "open", "ccre"))
 
 
 
