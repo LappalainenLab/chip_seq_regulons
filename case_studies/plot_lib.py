@@ -22,8 +22,8 @@ def plot_enrich(df, palette, size="Combined Score"):
         #return [textwrap.wrap(wraped_text, 30) for wraped_text in text]
         return ["\n".join(textwrap.wrap(wraped_text, 25)) for wraped_text in text]
 
-    p = (ggplot(df, aes(x="-log10(Adj. P-value)", y="Term", color="Network", size=size)) + 
-        geom_point() +
+    p = (ggplot(df, aes(x="-log10(Adj. P-value)", y="Term", color="Network", size=size)) + #aes(x="-log10(Adj. P-value)", y="Term", color="Network", size=size)) + 
+        geom_point(position=position_dodge2(width=0.5)) +
         geom_vline(xintercept=1.3, linetype="dashed") +
         scale_y_discrete(breaks=df['Term'].unique().tolist(), 
                            labels=wraping_func) +
