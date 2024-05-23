@@ -13,18 +13,39 @@ registerDoParallel(cores=10)
 
 here::i_am("README.md")
 
+r2Log <- function(model) {
+
+  summaryLog <- summary(model)
+  1 - summaryLog$deviance / summaryLog$null.deviance
+
+}
+
 
 # Plot style
 source("figures/fig_style.R")
 
-cell_line = c("HepG2", "MCF7", "GM12878")
+cell_line = c("HepG2", "MCF7", "GM12878", "K562")
 
 foreach(cl = cell_line) %do% {
 	
 	# Load regulons
-	input_file = sprintf("data/regulons/%s_all_regulons.tsv", cl)
+	input_file = sprintf("data/regulons/TF_target_mapping_filtered_merged_%s_with_ppi_with_dnase_with_atac_with_motifs_with_ccres_cleaned.tsv", cl)
 	tf_target_mapping = fread(input_file, nThread=10)
 	
+	tf_target_mapping %>% select(c(n_motifs, 
+					n_motifs_hoco, 
+					is_dnase, 
+					is_S2Mb, 
+					is_S2Kb, 
+					is_M2Kb, 
+					is_atac, 
+					ensembl_gene_id, 
+					tpm_total, 
+					is_ppi, 
+					tf, 
+					gene_symbol, 
+					accession)) %>% 
+				distinct() -> tf_target_mapping	
 	shuffled_net = tf_target_mapping
 	shuffled_net[, c("gene_symbol", "tpm_total", "ensembl_gene_id")] = sample_n(shuffled_net[, c("gene_symbol", "tpm_total", "ensembl_gene_id")], nrow(shuffled_net), replace = TRUE)
 	
@@ -50,7 +71,7 @@ foreach(cl = cell_line) %do% {
                 	        sub_tf_target_mapping_acc = sub_tf_target_mapping[sub_tf_target_mapping$accession == x, ]
 				
 				sub_tf_target_mapping_acc %>% group_by(ensembl_gene_id) %>% 
-				summarise(across(c(is_method_1, is_method_2, is_method_3,
+				summarise(across(c(is_S2Mb, is_M2Kb, is_S2Kb,
 								is_ppi), function(x){as.logical(sum(x))})) -> sub_tf_target_mapping_acc
 				left_join(tested_genes, sub_tf_target_mapping_acc) -> sub_tested_genes                      	
 				
@@ -60,7 +81,7 @@ foreach(cl = cell_line) %do% {
                 	        sub_shuffled_net_acc = sub_shuffled_net[sub_shuffled_net$accession == x, ]
 	
        		                sub_shuffled_net_acc %>% group_by(ensembl_gene_id) %>%
-               		                summarise(across(c(is_method_1, is_method_2, is_method_3,
+               		                summarise(across(c(is_S2Mb, is_M2Kb, is_S2Kb,
                                		                        is_ppi), function(x){as.logical(sum(x))})) -> sub_shuffled_net_acc
        		                left_join(tested_genes, sub_shuffled_net_acc) -> sub_tested_genes_shuffled
 	
@@ -69,7 +90,7 @@ foreach(cl = cell_line) %do% {
 	
 				# S2Mb
 	
-				log_model_target_m1 = glm("is_method_1 ~ is_ppi + tpm_total",
+				log_model_target_m1 = glm("is_S2Mb ~ is_ppi + tpm_total",
                		                                data = sub_tested_genes, family="binomial")
 	
        		                odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,1]))
@@ -79,15 +100,16 @@ foreach(cl = cell_line) %do% {
        		                log2(odds_ratio) 
                		        pvalue 
 	
-       		                tmp = cbind(tmp, c("is_ppi", "method1", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue, x))
-	
-	
+       		                tmp = cbind(tmp, c("is_ppi", "S2Mb", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue, x))
+				
+				print("R^2")
+				print(r2Log(log_model_target_m1))
 	
 				#---------------------------------------------------------------------------------------------------------------------------------------------------------------
 				# M2Kb
 	
 	
-				log_model_target_m2 = glm("is_method_2 ~ is_ppi + tpm_total",
+				log_model_target_m2 = glm("is_M2Kb ~ is_ppi + tpm_total",
                		                                data = sub_tested_genes, family="binomial")
 	
        		                odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,1]))
@@ -97,14 +119,16 @@ foreach(cl = cell_line) %do% {
        		                log2(odds_ratio) 
                		        pvalue 
 	
-       		                tmp = cbind(tmp, c("is_ppi", "method2", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue, x))
+       		                tmp = cbind(tmp, c("is_ppi", "M2Kb", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue, x))
 				
+                                print("R^2")
+                                print(r2Log(log_model_target_m2))
 
         	                #---------------------------------------------------------------------------------------------------------------------------------------------------------------                        
 				# S2Kb
 	
 
-				log_model_target_m3 = glm("is_method_3 ~ is_ppi + tpm_total",
+				log_model_target_m3 = glm("is_S2Kb ~ is_ppi + tpm_total",
        	        	                                data = sub_tested_genes, family="binomial")
 	
        		                odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,1]))
@@ -114,13 +138,16 @@ foreach(cl = cell_line) %do% {
        	        	        log2(odds_ratio) 
                	        	pvalue 
 	
-       		                tmp = cbind(tmp, c("is_ppi", "method3", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue, x))
+       		                tmp = cbind(tmp, c("is_ppi", "S2Kb", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue, x))
+
+                                print("R^2")
+                                print(r2Log(log_model_target_m3))
 
        		                #---------------------------------------------------------------------------------------------------------------------------------------------------------------
                		        # Shuffled network
 	
 
-        	                log_model_target_shuf = glm("is_method_1 ~ is_ppi + tpm_total",
+        	                log_model_target_shuf = glm("is_S2Mb ~ is_ppi + tpm_total",
        	        	                                data = sub_tested_genes_shuffled, family="binomial")
 	
        		                odds_ratio = exp(as.numeric(data.table(summary(log_model_target_shuf)$coefficients)[2,1]))
@@ -131,7 +158,11 @@ foreach(cl = cell_line) %do% {
                		        pvalue
 	
        		                tmp = cbind(tmp, c("is_ppi", "Random", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue, x))
-		
+
+                                print("R^2")
+                                print(r2Log(log_model_target_shuf))
+				
+				tmp		
 		
 	                        #---------------------------------------------------------------------------------------------------------------------------------------------------------------
 		})
