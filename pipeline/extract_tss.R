@@ -10,20 +10,23 @@ library(parallel)
 library(foreach)
 library(here)
 library(argparser)
+library(httr)
 })
 
-# Set working directory and define data directories
-# The working directory is set to a specific path.
+# To-Do:
+# - pass current path as arg
+
+# Set working directory
 setwd("/proj/lappalainen_lab1/users/marii/chip_seq_ann/")
-data_dir = "data/encode_bulk_rna/"
-processed_data_dir = "data/tss_mapping/"
 
 # Create a connection to the Ensembl database
 ensembl <- biomaRt::useEnsembl(
         biomart = "ensembl", 
         dataset = "hsapiens_gene_ensembl",
-        host = "http://www.ensembl.org",
-	mirror = "useast"
+        #host = "https://feb2023.archive.ensembl.org", #release 109
+	#host = "https://apr2020.archive.ensembl.org", #release 100
+        host = "https://jul2023.archive.ensembl.org", #release 110
+	mirror = "uswest"
 )
 
 # Parse command-line arguments using the argparser package
@@ -32,7 +35,12 @@ ensembl <- biomaRt::useEnsembl(
 p <- arg_parser("Get input file")
 p <- add_argument(p, "cell_line", help="cell_line_name", type="character")
 p <- add_argument(p, "reps", help="replicate filenames comma separated", type="character") 
+p <- add_argument(p, "path", help="path to working directory", type="character")
 argv <- parse_args(p)
+
+# Define data directories
+data_dir = paste0(argv$path, "/encode_bulk_rna/")
+processed_data_dir = paste0(argv$path, "/tss_mapping/")
 
 # Extract cell_line and replicate filenames from parsed arguments
 cell_line = argv$cell_line
@@ -60,8 +68,10 @@ if (ncol(fread(paste0(data_dir, reps[1], ".tsv"), nThread=10)) == 5){
 	# Calculate average expression between replicates
 	count_matrix <- count_mats %>% reduce(inner_join, by=target_id_columns)
 	count_matrix$tpm_total <- count_matrix %>% dplyr::select(starts_with("tpm")) %>% rowMeans()
+        count_matrix$est_counts <- count_matrix %>% dplyr::select(starts_with("est_counts")) %>% rowMeans()
 	count_matrix = count_matrix[order(count_matrix$ensembl_gene),]
 	
+        print(head(count_matrix))
 	
 	# Calculate maximum gene expression among transcripts for each gene
 	count_matrix %>% 
@@ -70,11 +80,7 @@ if (ncol(fread(paste0(data_dir, reps[1], ".tsv"), nThread=10)) == 5){
 	
 	# Filter for transcripts with the highest expression
 	count_matrix %>%
-		filter(tpm_total == max_tpm & tpm_total > 0) -> expressed
-	
-	# Filter non-expressed genes
-	count_matrix %>%
-		filter(! ensembl_gene %in% unique(expressed$ensembl_gene)) -> non_expressed
+		filter(tpm_total == max_tpm & est_counts > 5.0) -> expressed
 	
 	# Remove version from ensembl_gene_id and ensembl_transcript_id
 	expressed$ensembl_gene_id <- sapply(expressed$ensembl_gene, remove_version)
@@ -101,42 +107,9 @@ if (ncol(fread(paste0(data_dir, reps[1], ".tsv"), nThread=10)) == 5){
 	# Join data for expressed genes
 	expressed %>% left_join(symbols_ensembl_expressed, by=c("ensembl_transcript_id", "ensembl_gene_id")) -> expressed_joint
 	
-	# Remove version from ensembl_gene_id and ensembl_transcript_id
-	non_expressed$ensembl_gene_id <- sapply(non_expressed$ensembl_gene, remove_version)
-	non_expressed$ensembl_transcript_id <- sapply(non_expressed$ensembl_transcript, remove_version)
-	
-	
-	# Retrieve gene ids, strand, TSS, and exons coordinates for non-expressed genes
-	symbols_ensembl_non_expressed <- as.data.table(biomaRt::getBM(
-	        attributes = c("external_gene_name", 
-	                       "ensembl_gene_id",
-	                       "chromosome_name",
-	                       "strand", 
-	                       "ensembl_transcript_id_version", 
-	                       "transcription_start_site",
-	                       "transcript_biotype",
-				"ensembl_transcript_id"),
-	        filters = c("ensembl_gene_id"),
-        	values = non_expressed$ensembl_gene_id,
-        	mart = ensembl
-	)) # TSS matches exon_chrom_start if strand == 1, and matches exon_chrom_end if strand == -1
-	symbols_ensembl_non_expressed[, strand_num := ifelse(strand == 1, "+", "-")]
-	symbols_ensembl_non_expressed[, chr := paste0("chr", chromosome_name)]
-	
-	# Join data for non-expressed genes
-	non_expressed %>% left_join(symbols_ensembl_non_expressed, by=c("ensembl_transcript_id", "ensembl_gene_id")) -> non_expressed_joint
-	
-	# Select most abundant TSS fpr non-expressed genes
-	non_expressed_joint %>% 
-		group_by(ensembl_gene_id, transcription_start_site) %>%
-		mutate(tss_count=n()) %>% 
-		ungroup() %>%
-		group_by(ensembl_gene) %>%
-		mutate(max_tss_count = max(tss_count)) %>% 
-		filter(tss_count == max_tss_count) -> non_expressed_joint
-	
+
 	# Join data for expressed and non-expressed genes
-	symbols_ensembl = bind_rows(expressed_joint, non_expressed_joint)
+	symbols_ensembl = expressed_joint
 	
 	# Convert data to BED file format
 	bed = unique(symbols_ensembl[c("chr", "transcription_start_site", "transcription_start_site",
@@ -146,7 +119,7 @@ if (ncol(fread(paste0(data_dir, reps[1], ".tsv"), nThread=10)) == 5){
 	bed %>% drop_na() -> bed
 	
 	# Write data to file
-	write.table(bed, paste0(processed_data_dir, cell_line, "_gene_TSS_highest_expressed.bed"), quote=F, sep="\t", row.names = F, col.names = F)
+	write.table(bed, paste0(processed_data_dir, cell_line, "_gene_TSS_highest_expressed_enc_v110.bed"), quote=F, sep="\t", row.names = F, col.names = F)
 } else {
         # Data processing for 19-column input files
         
@@ -159,6 +132,7 @@ if (ncol(fread(paste0(data_dir, reps[1], ".tsv"), nThread=10)) == 5){
         # Calculate average expression between replicates
         count_matrix <- count_mats %>% reduce(inner_join, by=c("transcript_id", "gene_id"))
         count_matrix$tpm_total <- count_matrix %>% dplyr::select(starts_with("TPM")) %>% rowMeans()
+        count_matrix$expected_count <- count_matrix %>% dplyr::select(starts_with("expected_count")) %>% rowMeans()
 	count_matrix = count_matrix[order(count_matrix$gene_id),]
 	
 	# Calculate maximum gene expression among transcripts for each gene
@@ -168,11 +142,12 @@ if (ncol(fread(paste0(data_dir, reps[1], ".tsv"), nThread=10)) == 5){
 	
 	# Filter for transcripts with the highest expression
 	count_matrix %>%
-        	filter(tpm_total == max_tpm & tpm_total > 0) -> expressed
+        	filter(tpm_total == max_tpm & expected_count > 5.0) -> expressed
 	
 	# Filter non-expressed genes
 	count_matrix %>%
         	filter(! gene_id %in% unique(expressed$gene_id)) -> non_expressed
+
 	# Remove version from ensembl_gene_id and ensembl_transcript_id
 	expressed$ensembl_gene_id <- sapply(expressed$gene_id, remove_version)
 	expressed$ensembl_transcript_id <- sapply(expressed$transcript_id, remove_version)
@@ -198,43 +173,9 @@ if (ncol(fread(paste0(data_dir, reps[1], ".tsv"), nThread=10)) == 5){
 	# Join data for expressed genes
 	expressed %>% left_join(symbols_ensembl_expressed, by=c("ensembl_transcript_id", "ensembl_gene_id")) -> expressed_joint
 	
-	# Remove version from ensembl_gene_id and ensembl_transcript_id
-	non_expressed$ensembl_gene_id <- sapply(non_expressed$gene_id, remove_version)
-	non_expressed$ensembl_transcript_id <- sapply(non_expressed$transcript_id, remove_version)
-	
-	
-	# Retrieve gene ids, strand, TSS, and exons coordinates for non-expressed genes
-	symbols_ensembl_non_expressed <- as.data.table(biomaRt::getBM(
-	        attributes = c("external_gene_name",
-        	               "ensembl_gene_id",
-        	               "chromosome_name",
-        	               "gene_biotype",   
-        	               "strand",
-        	               "ensembl_transcript_id_version",
-        	               "transcription_start_site",
-        	               "transcript_biotype",
-        	                "ensembl_transcript_id"),
-        	filters = c("ensembl_gene_id"),
-        	values = non_expressed$ensembl_gene_id,
-        	mart = ensembl
-	)) # TSS matches exon_chrom_start if strand == 1, and matches exon_chrom_end if strand == -1
-	symbols_ensembl_non_expressed[, strand_num := ifelse(strand == 1, "+", "-")]
-	symbols_ensembl_non_expressed[, chr := paste0("chr", chromosome_name)]
-	
-	# Join data for non-expressed genes
-	non_expressed %>% left_join(symbols_ensembl_non_expressed, by=c("ensembl_transcript_id", "ensembl_gene_id")) -> non_expressed_joint
-	
-	# Select most abundant TSS fpr non-expressed genes
-	non_expressed_joint %>%
-        	group_by(ensembl_gene_id, transcription_start_site) %>%
-        	mutate(tss_count=n()) %>%
-        	ungroup() %>%
-        	group_by(gene_id) %>%
-        	mutate(max_tss_count = max(tss_count)) %>%
-        	filter(tss_count == max_tss_count) -> non_expressed_joint
 	
 	# Join data for expressed and non-expressed genes
-	symbols_ensembl = bind_rows(expressed_joint, non_expressed_joint)
+	symbols_ensembl = expressed_joint
 	
 	# Convert data to BED file format
 	bed = unique(symbols_ensembl[c("chr", "transcription_start_site", "transcription_start_site",
@@ -245,5 +186,5 @@ if (ncol(fread(paste0(data_dir, reps[1], ".tsv"), nThread=10)) == 5){
 	bed %>% drop_na() -> bed
 	
 	# Write data to file
-	write.table(bed, paste0(processed_data_dir, cell_line, "_gene_TSS_highest_expressed.bed"), quote=F, sep="\t", row.names = F, col.names = F)
+	write.table(bed, paste0(processed_data_dir, cell_line, "_gene_TSS_highest_expressed_enc_v110.bed"), quote=F, sep="\t", row.names = F, col.names = F)
 }
