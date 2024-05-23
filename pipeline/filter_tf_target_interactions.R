@@ -17,6 +17,7 @@ p <- arg_parser("Get input file")
 
 # Add command-line argument for cell line name
 p <- add_argument(p, "cell_line", help="cell_line_name", type="character")
+p <- add_argument(p, "path", help="data path", type="character")
 argv <- parse_args(p)
 
 # Function to standardize column names in data frames
@@ -51,7 +52,7 @@ get_col_annot = function(data){
 # S2 methods: highest expressed isoform + most frequent non-expressed
 
 # Read data from a file
-tf_target_mapping_highest_meth_1 = fread(paste0("data/mappings/remap2022_", argv$cell_line, "_macs2_hg38_v1_0_no_black_sorted_mapped_highest_expressed.bed"), header=F)
+tf_target_mapping_highest_meth_1 = fread(paste0(argv$path, "/mappings/remap2022_", argv$cell_line, "_macs2_hg38_v1_0_no_black_sorted_mapped_highest_expressed_enc_v110.bed"), header=F)
 
 # Standardize column names
 tf_target_mapping_highest_meth_1 = get_col_annot(tf_target_mapping_highest_meth_1)
@@ -66,7 +67,7 @@ tf_target_mapping_highest_meth_1 %>%
 # M2Kb method: top 50% expressed isoforms + top 50% most abundant isoforms for non-expressed genes
 
 # Read data from a file
-tf_target_mapping_50 = fread(paste0("data/mappings/remap2022_", argv$cell_line, "_macs2_hg38_v1_0_no_black_sorted_mapped_top50_expressed.bed"), header=F)
+tf_target_mapping_50 = fread(paste0(argv$path, "/mappings/remap2022_", argv$cell_line, "_macs2_hg38_v1_0_no_black_sorted_mapped_top50_expressed_enc_v110.bed"), header=F)
 
 # Standardize column names
 tf_target_mapping_50 = get_col_annot(tf_target_mapping_50)
@@ -129,7 +130,7 @@ tf_target_mapping %>%
 # Write the data frame to a TSV file
 write.table(
         tf_target_mapping,
-        paste0("data/regulons/TF_target_mapping_filtered_merged_", argv$cell_line, ".tsv"),
+        paste0(argv$path, "/regulons/TF_target_mapping_filtered_merged_", argv$cell_line, "_enc_v110.tsv"),
         quote=F, sep="\t", row.names = F, col.names = T
         )
 
