@@ -19,7 +19,6 @@ source("figures/fig_style.R")
 library(RColorBrewer)
 cell_line = c("K562", "HepG2", "MCF7", "GM12878")
 foreach(cl = cell_line) %do% {
-    #input_file <- sprintf("data/regulons/%s_all_regulons.tsv", cl)
 	input_file <- sprintf("data/regulons/TF_target_mapping_filtered_merged_%s_with_ppi_with_dnase_with_atac_with_motifs_with_ccres.tsv", cl)
 
 	to_plot = fread(input_file)
