@@ -8,7 +8,8 @@ The installation of the dependencies required for the repository, requires `cond
 
 ```
 git clone https://github.com/LappalainenLab/chip_seq_regulons.git
-conda create --name chip_seq_reg --file environment.txt
+cd chip_seq_regulons/
+conda env create --file environment.yaml
 conda activate chip_seq_reg
 ```
 
