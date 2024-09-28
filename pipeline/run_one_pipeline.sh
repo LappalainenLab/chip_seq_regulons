@@ -26,6 +26,11 @@ then
      	mkdir "${DATA_PATH}/mappings"
 fi 
 
+if [ ! -d "${DATA_PATH}/regulons" ] 
+then 
+     	mkdir "${DATA_PATH}/regulons"
+fi 
+
 # Extract highest expressed TSS
 Rscript ./pipeline/extract_tss.R $CELLS $RNA_FILES $DATA_PATH
 echo "Extracted TSS 1"
