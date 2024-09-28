@@ -1,21 +1,7 @@
-name: chip_seq_reg
+name: chip_seq_reg_1
 channels:
   - bioconda
   - conda-forge
-  - file:///sw/apps/conda/latest/rackham/local_repo/conda-forge
-  - file:///sw/apps/conda/latest/rackham/local_repo/scilifelab-lts
-  - file:///sw/apps/conda/latest/rackham/local_repo/r
-  - file:///sw/apps/conda/latest/rackham/local_repo/main
-  - file:///sw/apps/conda/latest/rackham/local_repo/bioconda
-  - file:///sw/apps/conda/latest/rackham/local_repo/free
-  - file:///sw/apps/conda/latest/rackham/local_repo/pro
-  - file:///sw/apps/conda/latest/rackham/local_repo/qiime2
-  - file:///sw/apps/conda/latest/rackham/local_repo/biocore
-  - file:///sw/apps/conda/latest/rackham/local_repo/dranew
-  - file:///sw/apps/conda/latest/rackham/local_repo/r2018.11
-  - file:///sw/apps/conda/latest/rackham/local_repo/nvidia
-  - file:///sw/apps/conda/latest/rackham/local_repo/pytorch
-  - file:///sw/apps/conda/latest/rackham/local_repo/anaconda
   - defaults
 dependencies:
   - _libgcc_mutex=0.1
@@ -649,4 +635,3 @@ dependencies:
       - reactome2py==3.0.0
       - reprit==0.9.0
       - rsrc==0.1.3
-prefix: /home/marii/.conda/envs/chip_seq_reg

@@ -1,8 +1,10 @@
 # chip_seq_regulons
 
-This repo contains code used in preprint Specifying cellular context of transcription factor regulons for exploring context-specific gene regulation prog$
+Specifying cellular context of transcription factor regulons for exploring context-specific gene regulation programs
 
 ### Installation
+
+The installation of the dependencies required for the repository, requires `conda`. Further instructions on installing Anaconda could be found [here](https://docs.conda.io/projects/conda/en/latest/user-guide/index.html)
 
 ```
 git clone https://github.com/LappalainenLab/chip_seq_regulons.git
@@ -12,7 +14,7 @@ conda activate chip_seq_reg
 
 ### Annotation pipeline:
 
-Contains scripts to run the S2Mb, S2Kb and M2Kb TF-target gene annotation pipelines
+Contains scripts to run the S2Mb, S100Kb, S2Kb, M100Kb, and M2Kb TF-target gene annotation pipelines
 
 1. Put all necessary data files, i.e. ReMap and RNA-Seq data, to respective data directories (see data directory structure below)
 2. Run annotation pipeline with 
