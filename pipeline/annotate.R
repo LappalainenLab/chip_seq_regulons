@@ -1,3 +1,5 @@
+#!/usr/bin/Rscript
+
 # Load required packages while suppressing startup messages
 suppressPackageStartupMessages({
 library(GenomicRanges)
@@ -6,10 +8,13 @@ library(stringr)
 library(data.table)
 library(dplyr)
 library(argparser)
+library(here)
 })
 
-# Set working directory and define data directories
-setwd("/proj/lappalainen_lab1/users/marii/chip_seq_ann/")
+here::i_am("README.md")
+
+# Set working directory
+setwd(here())
 
 # Parse command-line arguments
 # Create a parser
@@ -22,11 +27,10 @@ p <- add_argument(p, "dnase", help="DNAse-Seq accession", type="character")
 p <- add_argument(p, "path", help="data path", type="character")
 argv <- parse_args(p)
 
-data_dir = "data/"
 processed_data_dir = paste0(argv$path, "/regulons/")
 
 # Read TF target mapping data
-data_tf = fread(paste0(processed_data_dir, "TF_target_mapping_filtered_merged_", argv$cell_line, "_enc_v100.tsv"), nThread=10)
+data_tf = fread(paste0(processed_data_dir, "TF_target_mapping_filtered_merged_", argv$cell_line, ".tsv"), nThread=10)
 
 # Read protein-protein interaction (PPI) data
 data_ppi = fread(paste0(argv$path, "/9606.protein.links.full.v11.5.with.names.txt"), nThread=10)
@@ -109,5 +113,5 @@ if (as.logical(sum(str_locate(colnames(data_tf), "n_motifs"), na.rm=T))){
 }
 
 # Write the result to a file
-fwrite(tf_target_mapping, paste0(processed_data_dir, "TF_target_mapping_filtered_merged_", argv$cell_line, "_enc_v100_with_ppi_with_dnase_with_atac.tsv"), col.names=T, row.names=F, quote=F, sep="\t")
+fwrite(tf_target_mapping, paste0(processed_data_dir, "TF_target_mapping_filtered_merged_", argv$cell_line, "_with_ppi_with_dnase_with_atac.tsv"), col.names=T, row.names=F, quote=F, sep="\t")
 

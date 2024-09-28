@@ -1,3 +1,5 @@
+#!/usr/bin/Rscript
+
 # Load required packages while suppressing startup messages
 suppressPackageStartupMessages({
 library(GenomicRanges)
@@ -7,10 +9,13 @@ library(data.table)
 library(dplyr)
 library(argparser)
 library(foreach)
+library(here)
 })
 
-# Set working directory and define data directories
-setwd("/proj/lappalainen_lab1/users/marii/chip_seq_ann/")
+here::i_am("README.md")
+
+# Set working directory
+setwd(here())
 
 # Parse command-line arguments
 # Create a parser

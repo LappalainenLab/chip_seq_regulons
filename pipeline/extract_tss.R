@@ -1,3 +1,5 @@
+#!/usr/bin/Rscript
+
 # Suppress package startup messages to prevent clutter
 suppressPackageStartupMessages({
 library(dplyr)
@@ -13,19 +15,19 @@ library(argparser)
 library(httr)
 })
 
-# To-Do:
-# - pass current path as arg
+
+here::i_am("README.md")
 
 # Set working directory
-setwd("/proj/lappalainen_lab1/users/marii/chip_seq_ann/")
+setwd(here())
 
 # Create a connection to the Ensembl database
 ensembl <- biomaRt::useEnsembl(
         biomart = "ensembl", 
         dataset = "hsapiens_gene_ensembl",
-        #host = "https://feb2023.archive.ensembl.org", #release 109
+        host = "https://feb2023.archive.ensembl.org", #release 109
 	#host = "https://apr2020.archive.ensembl.org", #release 100
-        host = "https://jul2023.archive.ensembl.org", #release 110
+        #host = "https://jul2023.archive.ensembl.org", #release 110
 	mirror = "uswest"
 )
 
@@ -70,8 +72,6 @@ if (ncol(fread(paste0(data_dir, reps[1], ".tsv"), nThread=10)) == 5){
 	count_matrix$tpm_total <- count_matrix %>% dplyr::select(starts_with("tpm")) %>% rowMeans()
         count_matrix$est_counts <- count_matrix %>% dplyr::select(starts_with("est_counts")) %>% rowMeans()
 	count_matrix = count_matrix[order(count_matrix$ensembl_gene),]
-	
-        print(head(count_matrix))
 	
 	# Calculate maximum gene expression among transcripts for each gene
 	count_matrix %>% 
@@ -119,7 +119,7 @@ if (ncol(fread(paste0(data_dir, reps[1], ".tsv"), nThread=10)) == 5){
 	bed %>% drop_na() -> bed
 	
 	# Write data to file
-	write.table(bed, paste0(processed_data_dir, cell_line, "_gene_TSS_highest_expressed_enc_v110.bed"), quote=F, sep="\t", row.names = F, col.names = F)
+	write.table(bed, paste0(processed_data_dir, cell_line, "_gene_TSS_highest_expressed.bed"), quote=F, sep="\t", row.names = F, col.names = F)
 } else {
         # Data processing for 19-column input files
         
@@ -186,5 +186,5 @@ if (ncol(fread(paste0(data_dir, reps[1], ".tsv"), nThread=10)) == 5){
 	bed %>% drop_na() -> bed
 	
 	# Write data to file
-	write.table(bed, paste0(processed_data_dir, cell_line, "_gene_TSS_highest_expressed_enc_v110.bed"), quote=F, sep="\t", row.names = F, col.names = F)
+	write.table(bed, paste0(processed_data_dir, cell_line, "_gene_TSS_highest_expressed.bed"), quote=F, sep="\t", row.names = F, col.names = F)
 }

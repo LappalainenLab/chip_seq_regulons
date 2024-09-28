@@ -1,3 +1,5 @@
+#!/usr/bin/Rscript
+
 # Load required packages while suppressing startup messages
 suppressPackageStartupMessages({
 library(GenomicRanges)
@@ -6,10 +8,13 @@ library(stringr)
 library(data.table)
 library(dplyr)
 library(argparser)
+library(here)
 })
 
-# Set working directory and define data directories
-setwd("/proj/lappalainen_lab1/users/marii/chip_seq_ann/")
+here::i_am("README.md")
+
+# Set working directory
+setwd(here())
 
 # Parse command-line arguments
 # Create a parser
@@ -20,7 +25,6 @@ p <- add_argument(p, "cell_line", help="cell_line_name", type="character")
 p <- add_argument(p, "path", help="data path", type="character")
 argv <- parse_args(p)
 
-data_dir = "data/"
 processed_data_dir = paste0(argv$path, "/regulons/")
 
 # Read TF target mapping data
@@ -122,6 +126,5 @@ if (file.exists(paste0(argv$path, "/encode_ccre/", argv$cell_line, "_dELS.bed"))
 }
 
 # Write the result to a file
-print(head(temp))
 write.table(temp, paste0(processed_data_dir, "TF_target_mapping_filtered_merged_", argv$cell_line, "_with_ppi_with_dnase_with_atac_with_motifs_with_ccres.tsv"), col.names=T, row.names=F, quote=F, sep="\t")
 

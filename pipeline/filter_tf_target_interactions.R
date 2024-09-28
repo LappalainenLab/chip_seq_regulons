@@ -1,3 +1,5 @@
+#!/usr/bin/Rscript
+
 # Load required packages while suppressing startup messages
 suppressPackageStartupMessages({
 library(tidyr)
@@ -5,11 +7,13 @@ library(data.table)
 library(stringr)
 library(argparser)
 library(dplyr)
+library(here)
 })
 
+here::i_am("README.md")
 
 # Set working directory
-setwd("/proj/lappalainen_lab1/users/marii/chip_seq_ann")
+setwd(here())
 
 # Parse command-line arguments
 # Create a parser
@@ -52,7 +56,7 @@ get_col_annot = function(data){
 # S2 methods: highest expressed isoform + most frequent non-expressed
 
 # Read data from a file
-tf_target_mapping_highest_meth_1 = fread(paste0(argv$path, "/mappings/remap2022_", argv$cell_line, "_macs2_hg38_v1_0_no_black_sorted_mapped_highest_expressed_enc_v110.bed"), header=F)
+tf_target_mapping_highest_meth_1 = fread(paste0(argv$path, "/mappings/remap2022_", argv$cell_line, "_macs2_hg38_v1_0_no_black_sorted_mapped_highest_expressed.bed"), header=F)
 
 # Standardize column names
 tf_target_mapping_highest_meth_1 = get_col_annot(tf_target_mapping_highest_meth_1)
@@ -61,20 +65,22 @@ tf_target_mapping_highest_meth_1 = get_col_annot(tf_target_mapping_highest_meth_
 # +/- 1Mb around TSS for the S2Mb method and +/- 1Kb around TSS for the S2Kb method
 tf_target_mapping_highest_meth_1 %>%
 	mutate(is_S2Mb = abs(distance) < 1000000,
-	       is_S2Kb = abs(distance) < 1000) -> tf_target_mapping_highest
+	       is_S2Kb = abs(distance) < 1000,
+	       is_S100Kb = abs(distance) < 50000) -> tf_target_mapping_highest
 
 
 # M2Kb method: top 50% expressed isoforms + top 50% most abundant isoforms for non-expressed genes
 
 # Read data from a file
-tf_target_mapping_50 = fread(paste0(argv$path, "/mappings/remap2022_", argv$cell_line, "_macs2_hg38_v1_0_no_black_sorted_mapped_top50_expressed_enc_v110.bed"), header=F)
+tf_target_mapping_50 = fread(paste0(argv$path, "/mappings/remap2022_", argv$cell_line, "_macs2_hg38_v1_0_no_black_sorted_mapped_top50_expressed.bed"), header=F)
 
 # Standardize column names
 tf_target_mapping_50 = get_col_annot(tf_target_mapping_50)
 
 # Filter interactions based on the distance filters: +/- 1Kb around TSS
 tf_target_mapping_50 %>% 
-	mutate(is_M2Kb = abs(distance) < 1000) -> tf_target_mapping_50
+	mutate(is_M2Kb = abs(distance) < 1000,
+	       is_M100Kb = abs(distance) < 50000) -> tf_target_mapping_50
 
 # Join S2 and M2 regulons and filter out negative interactions
 full_join(tf_target_mapping_highest, tf_target_mapping_50,
@@ -94,7 +100,9 @@ full_join(tf_target_mapping_highest, tf_target_mapping_50,
 		             gene_type))  %>% 
         mutate(is_S2Mb = replace_na(is_S2Mb, FALSE),
                is_S2Kb = replace_na(is_S2Kb, FALSE), 
-               is_M2Kb = replace_na(is_M2Kb, FALSE)) -> joint_mapping
+               is_M2Kb = replace_na(is_M2Kb, FALSE),
+	       is_S100Kb = replace_na(is_S100Kb, FALSE),
+               is_M100Kb = replace_na(is_M100Kb, FALSE)) -> joint_mapping
 
 
 needed_cols = c("chr", "start_tss", "end_tss",
@@ -117,7 +125,9 @@ joint_mapping %>%
 	group_by(peak_name, ensembl_transcript, start_tss, transcript_biotype) %>% 
 	mutate(n_peaks_M2Kb = sum(is_M2Kb), 
 		n_peaks_S2Kb = sum(is_S2Kb), 
-		n_peaks_S2Mb = sum(is_S2Mb)) %>%
+		n_peaks_S2Mb = sum(is_S2Mb),
+                n_peaks_S100Kb = sum(is_S100Kb),
+                n_peaks_M100Kb = sum(is_M100Kb)) %>%
 	ungroup() %>%
 	distinct(peak_name, ensembl_transcript, start_tss, transcript_biotype, .keep_all = TRUE) -> tf_target_mapping
 
@@ -130,7 +140,7 @@ tf_target_mapping %>%
 # Write the data frame to a TSV file
 write.table(
         tf_target_mapping,
-        paste0(argv$path, "/regulons/TF_target_mapping_filtered_merged_", argv$cell_line, "_enc_v110.tsv"),
+        paste0(argv$path, "/regulons/TF_target_mapping_filtered_merged_", argv$cell_line, ".tsv"),
         quote=F, sep="\t", row.names = F, col.names = T
         )
 

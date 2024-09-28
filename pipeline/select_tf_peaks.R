@@ -1,6 +1,14 @@
+#!/usr/bin/Rscript
+
 library(data.table)
 library(argparser)
 library(dplyr)
+library(here)
+
+here::i_am("README.md")
+
+# Set working directory
+setwd(here())
 
 # Create a parser
 p <- arg_parser("Get input file")
