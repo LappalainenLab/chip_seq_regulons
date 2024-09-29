@@ -1,6 +1,6 @@
 # chip_seq_regulons
 
-Specifying cellular context of transcription factor regulons for exploring context-specific gene regulation programs
+This repo contains code used in the preprint "Specifying cellular context of transcription factor regulons for exploring context-specific gene regulation programs"
 
 ### Installation
 
