@@ -20,8 +20,10 @@ Contains scripts to run the S2Mb, S100Kb, S2Kb, M100Kb, and M2Kb TF-target gene 
 1. Put all necessary data files, i.e. ReMap and RNA-Seq data, to respective data directories (see data directory structure below)
 2. Run annotation pipeline with 
 ```
-bash pipeline/run_one_pipeline.sh
+bash pipeline/run_one_pipeline.sh sample_cell sample_RNA_1,sample_RNA_2 sample_DNAse sample_ATAC
 ```
+where sample_cell is the name of the cell line; sample_RNA_1,sample_RNA_2 are comma-separated RNA-Seq replicate data accessions (i.e. file names); sample_DNAse is the DNAse-Seq data accession (i.e. file name); sample_ATAC is the ATAC-Seq data accession (i.e. file name).
+
 
 ### Benchmarking:
 
@@ -49,6 +51,11 @@ Rscript benchmark/test_ppi_enrich.R
 5. To perform enrichment analysis of TF-target gene pairs in biological networks for the K562 cell line (see Methods section of the manuscript for deatils)
 ```
 Rscript benchmark/test_net_enrich.R
+```
+
+6. To perform enrichment analysis of TF-target gene pairs in coexpression networks for the K562 cell line
+```
+Rscript benchmark/test_coexp_enrich.R
 ```
 
 ### Case studies:

@@ -1,15 +1,12 @@
 #!/bin/bash
 
 # Configure
-CELLS="sample_cell" # Name of the cell type consistent with ReMap2022 file name
-RNA_FILES="sample_RNA_1,sample_RNA_2" # Comma-separated RNA-Seq replicate data accessions 
-DNASE_FILE="sample_DNAse" # DNAse-Seq data accession
-ATAC_FILE="sample_ATAC" # ATAC-Seq data accession
+CELLS=$1 # Name of the cell type consistent with ReMap2022 file name
+RNA_FILES=$2 # Comma-separated RNA-Seq replicate data accessions 
+DNASE_FILE=$3 # DNAse-Seq data accession
+ATAC_FILE=$4 # ATAC-Seq data accession
 
-#CELLS="MCF7" # Name of the cell type consistent with ReMap2022 file name
-#RNA_FILES="ENCFF561BRN,ENCFF855YXZ,ENCFF152QTW" # Comma-separated RNA-Seq replicate data accessions 
-#DNASE_FILE="ENCFF835KCG" # DNAse-Seq data accession
-#ATAC_FILE="ENCFF821OEF" # ATAC-Seq data accession
+echo $CELL $RNA_FILES $DNASE_FILE $ATAC_FILE
 
 DATA_PATH="./data"
 CHIP_FILE_NAME="remap2022_${CELLS}_macs2_hg38_v1_0"
@@ -92,3 +89,7 @@ echo "Annotated cCREs"
 # Running cleanup
 filename=data/regulons/*$CELLS*ccres.tsv
 Rscript ./pipeline/dataset_cleanup.R $filename
+
+# Final file cleaning up
+cd data/regulons
+ls TF_target_mapping_filtered_merged_*$CELLS*.tsv | grep -v cleaned | xargs rm

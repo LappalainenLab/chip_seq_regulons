@@ -11,7 +11,7 @@ library(see)
 library(cowplot)
 library(foreach)
 
-
+setwd(here())
 
 cell_line = c("k562", "hepg2", "mcf7")
 
@@ -29,13 +29,13 @@ foreach(cl = cell_line) %do% {
 
 	data %>% filter((method == "consensus_estimate") & (metric == "mcauprc")) -> data
 
-	data$group = factor(data$group, levels=c("S2Mb", "M2Kb", "S2Kb"))
+	data$group = factor(data$group, levels=c("S2Mb", "M2Kb", "S2Kb", "S100Kb", "M100Kb"))
 	data$filter =  factor(data$filter, levels=c("random", "no", "motif", "open", "ccre"), labels=c("shuffled \nnetwork", "no filter", "motif", "open", "ccre"))
 
 
 
 	p1 = ggbarplot(data, x="filter", y="score", fill="group", group="filter", add = c("mean_ci"), position = position_dodge()) +
-        	scale_fill_okabeito(palette = "black_original", order=c(6, 4, 7)) +
+        	scale_fill_okabeito(palette = "black_original", order=c(6, 4, 7, 2, 5)) +
         	theme_pubr(legend = "right") +
         	theme(axis.text = element_text(size=9),
 			axis.text.x = element_text(size=9, angle = 30, vjust=0.75, hjust=1),

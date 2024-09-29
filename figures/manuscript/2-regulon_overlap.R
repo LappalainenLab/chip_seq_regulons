@@ -1,5 +1,4 @@
 library(data.table)
-#library(SuperExactTest)
 library(here)
 library(jtools)
 library(stringr)
@@ -13,7 +12,7 @@ library(decoupleR)
 
 registerDoParallel(cores=10)
 
-here::i_am("README.md")
+setwd(here())
 
 
 # Plot style
@@ -57,6 +56,16 @@ foreach(cl = cell_line) %do% {
                                 	dplyr::select(pair) %>%
                                 	dplyr::distinct() %>%
                                 	unlist(),
+                        "M100Kb" = to_plot %>%
+                                        filter(is_M100Kb) %>%
+                                        dplyr::select(pair) %>%
+                                        dplyr::distinct() %>%
+                                        unlist(),
+                        "S100Kb" = to_plot %>%
+                                        filter(is_S100Kb) %>%
+                                        dplyr::select(pair) %>%
+                                        dplyr::distinct() %>%
+                                        unlist(),
 			"ChIP-Atlas" = chip_atlas %>%
         	                                dplyr::distinct() %>%
                 	                        mutate(pair = paste0(tf, "_", Target_genes)) %>%
@@ -76,12 +85,15 @@ foreach(cl = cell_line) %do% {
                                 	        dplyr::select(pair) %>% 
 						dplyr::distinct() %>%
 	                                        unlist())
+	sets = c("S2Mb", "M2Kb", "S2Kb", "S100Kb", "M100Kb", "ChIP-Atlas", "Dorothea", "CollecTri")
+
+	fromList(test_list) %>% filter(rowSums(pick(all_of(sets)))>1) -> to_plot
 
 	plot_file = sprintf("plots/2-regulon_overlap/overlap_with_db_%s.svg", cl)
 	svg(plot_file, width = 8.268)
 
-	p = upset(fromList(test_list), 
-		sets = c("S2Mb", "M2Kb", "S2Kb", "ChIP-Atlas", "Dorothea", "CollecTri"), 
+	p = upset(to_plot, 
+		sets = sets,
 		mb.ratio = c(0.7, 0.3), 
 		order.by="freq", 
 		mainbar.y.label = "Pairs intersection", 

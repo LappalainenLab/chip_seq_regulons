@@ -9,6 +9,9 @@ library(gridExtra)
 library(tidyr)
 library(see)
 library(cowplot)
+
+setwd(here())
+
 palette = c()
 
 mcf7 = fread("data/2-plot_decoupler_comparison_benchmark_across_cells/mcf7_comparison_benchmark.tsv")
@@ -22,7 +25,7 @@ bind_rows(k562, mcf7, hepg2) -> data
 
 data %>% pivot_wider(names_from = metric, values_from = score, values_fn=mean) %>%
 	filter(method == "consensus_estimate")-> to_plot
-data$net = factor(data$net, levels=c("S2Mb", "M2Kb", "CollecTri", "Dorothea", "ChIP-Atlas", "RegNet", "TRRUST"))
+data$net = factor(data$net, levels=c("S2Mb", "M2Kb", "S100Kb", "M100Kb", "CollecTri", "Dorothea", "ChIP-Atlas", "RegNet", "TRRUST"))
 data$cells = factor(data$cells, levels=c("K-562", "MCF-7", "HepG2"))
 
 data %>% filter((method == "consensus_estimate") & (metric == "mcauprc")) -> data

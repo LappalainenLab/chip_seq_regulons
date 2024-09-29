@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/bin/env Rscript
 
 # Load required packages while suppressing startup messages
 suppressPackageStartupMessages({
@@ -31,6 +31,7 @@ processed_data_dir = paste0(argv$path, "/regulons/")
 tf_target_mapping = fread(paste0(processed_data_dir, "TF_target_mapping_filtered_merged_", argv$cell_line, "_with_ppi_with_dnase_with_atac_with_motifs.tsv"), nThread=10)
 
 temp = tf_target_mapping
+
 # PLS annotations 
 
 if (file.exists(paste0(argv$path, "/encode_ccre/", argv$cell_line, "_PLS.bed"))){

@@ -16,7 +16,8 @@ library(cowplot)
 library(foreach)
 
 #---------------fixing-paths------------------------
-here::i_am("README.md")
+setwd(here())
+
 processed_data_dir = "data/2-plot_decoupler_comparison_benchmark_across_cells/"
 plot_dir = "plots/s5_s7-plot_decoupler_comparison_benchmark/"
 #---------------------------------------------------
@@ -30,10 +31,10 @@ foreach(ct = cells) %do% {
 	data %>% pivot_wider(names_from = metric, values_from = score, values_fn=mean) %>%
 		filter(method == "consensus_estimate")-> to_plot
 
-	to_plot$net = factor(to_plot$net, levels=c("S2Mb", "M2Kb", "CollecTri", "Dorothea", "ChIP-Atlas", "RegNet", "TRRUST"))
+	to_plot$net = factor(to_plot$net, levels=c("S2Mb", "M100Kb", "S100Kb", "M2Kb", "CollecTri", "Dorothea", "ChIP-Atlas", "RegNet", "TRRUST"))
 	p1 = ggplot(data = to_plot, aes(x = mcauroc, y = mcauprc, color = net)) +
 		geom_point() +
-		scale_color_okabeito(palette = "black_original", order=c(6, 4, 8, 5, 2, 3, 9)) +
+		scale_color_okabeito(palette = "black_original", order=c(6, 2, 5, 4, 8, 1, 7, 3, 9)) +
 		theme_pubr(legend = c(0.85, 0.25)) +
 		theme(axis.text = element_text(size=9),
 			legend.background = element_blank(),
@@ -47,7 +48,7 @@ foreach(ct = cells) %do% {
                         default.unit="mm"))
 	ggsave(plot = p1, filename = paste0(plot_dir, "decoupler_bench_scatter_", ct, "_comparison.svg"), width=100, height=70, units="mm", dpi=720, device = "svg")
 	
-	data$net = factor(data$net, levels=c("S2Mb", "M2Kb", "CollecTri", "Dorothea", "GTRD", "ChIP-Atlas", "RegNet", "TRRUST"))
+	data$net = factor(data$net, levels=c("S2Mb", "M100Kb", "S100Kb", "M2Kb", "CollecTri", "Dorothea", "GTRD", "ChIP-Atlas", "RegNet", "TRRUST"))
 	
 	p2 = ggviolin(data = data %>% filter(metric == "mcauprc"), 
 			x = "net",
@@ -55,7 +56,7 @@ foreach(ct = cells) %do% {
 			add = "boxplot", 
 			add.params = list(fill = "white"),
 			fill = "net") +
-		scale_fill_oi(palette = "black_original", order=c(6, 4, 8, 5, 2, 3, 9)) +
+		scale_fill_oi(palette = "black_original", order=c(6, 2, 5, 4, 8, 1, 7, 3, 9)) +
 		theme_pubr(legend = "none") +
 		ylab("mcauprc") +
 		theme(axis.text.x = element_text(size=9, angle = 30, vjust=0.75),
@@ -76,7 +77,7 @@ foreach(ct = cells) %do% {
                         add = "boxplot",
                         add.params = list(fill = "white"),
                         fill = "net") +
-        	scale_fill_oi(palette = "black_original", order=c(6, 4, 8, 5, 2, 3, 9)) +
+        	scale_fill_oi(palette = "black_original", order=c(6, 2, 5, 4, 8, 1, 7, 3, 9)) +
 		theme_pubr(legend = "none") +
         	ylab("mcauroc") +
 		theme(axis.text.x = element_text(size=9, angle = 30, vjust=0.75),
@@ -98,7 +99,7 @@ foreach(ct = cells) %do% {
                         add = "boxplot",
                         add.params = list(fill = "white"),
                         fill = "net") +
-        	scale_fill_oi(palette = "black_original", order=c(6, 4, 8, 5, 2, 3, 9)) +
+        	scale_fill_oi(palette = "black_original", order=c(6, 2, 5, 4, 8, 1, 7, 3, 9)) +
         	theme_pubr(legend = "right") +
         	ylab("mcauroc") +
         	theme(axis.text.x = element_text(size=9, angle = 30, vjust=0.75),

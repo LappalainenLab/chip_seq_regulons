@@ -1,3 +1,6 @@
+#!/usr/bin/env Rscript
+
+# Load necessary libraries
 library(data.table)
 library(here)
 library(jtools)
@@ -8,239 +11,201 @@ library(dplyr)
 library(doParallel)
 library(foreach)
 library(tidyr)
+library(predictmeans)
 
-registerDoParallel(cores=10)
+# Set up parallel processing with 10 cores
+registerDoParallel(cores = 10)
 
-here::i_am("README.md")
+# Set the working directory to the project root
+setwd(here())
 
-r2Log <- function(model) {
-
-  summaryLog <- summary(model)
-  1 - summaryLog$deviance / summaryLog$null.deviance
-
+# Helper function to extract and format logistic model results
+extract_model_results <- function(model, variable, method, TF) {
+  summary_data <- data.table(summary(model)$coefficients)
+  
+  odds_ratio <- exp(summary_data[2, 1])
+  conf_int_l <- exp(summary_data[2, 1] - summary_data[2, 2] * 1.96)
+  conf_int_u <- exp(summary_data[2, 1] + summary_data[2, 2] * 1.96)
+  pvalue <- as.numeric(summary_data[2, 4])
+  
+  return(c(variable, method, TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
 }
 
-# Plot style
+# Load the custom plot style
 source("figures/fig_style.R")
 
-# Load regulons
-tf_target_mapping = fread("data/regulons/TF_target_mapping_filtered_merged_K562_with_ppi_with_dnase_with_atac_with_motifs_with_ccres_cleaned.tsv", nThread=10)
-tf_target_mapping$is_motif = (!is.na(tf_target_mapping$n_motifs) | !is.na(tf_target_mapping$n_motifs_hoco))
+# Load regulons and mark motif presence
+tf_target_mapping <- fread("data/regulons/TF_target_mapping_filtered_merged_K562_with_ppi_with_dnase_with_atac_with_motifs_with_ccres_cleaned.tsv", nThread = 10)
+tf_target_mapping$is_motif <- (!is.na(tf_target_mapping$n_motifs) | !is.na(tf_target_mapping$n_motifs_hoco))
 
+# Load network data and mark them as networks
+networks <- fread("data/trans_networks/STING_Seq_networks.tsv")
+networks$is_network <- TRUE
 
-networks = fread("data/trans_networks/STING_Seq_networks.tsv")
-networks$is_network = T
+# Filter for distinct tested genes based on gene_symbol
+tested_genes <- tf_target_mapping %>%
+  distinct(gene_symbol, tpm_total, ensembl_gene_id, is_coexpressed) %>%
+  group_by(gene_symbol) %>%
+  summarize(tpm_total = max(tpm_total))
 
-tf_target_mapping %>% distinct(gene_symbol, tpm_total, ensembl_gene_id, is_coexpressed) %>% group_by(gene_symbol) %>% summarize(tpm_total = max(tpm_total)) -> tested_genes 
+# List of transcription factors (TFs) to analyze
+tfs <- c("IKZF1", "GFI1B", "NFE2", "RUNX1")
 
-tfs = unique(tf_target_mapping$tf)
-
-
+# Calculate enrichment scores for each TF
 enrich_scores = foreach(TF = tfs) %dopar% {
-            print(paste0("Started: ", TF))
-            enrich_temp = list()
-            tmp = c()
-    
-            tf_target_mapping %>% filter(tf == TF) -> sub_tf_target_mapping
+  print(paste0("Started: ", TF))
+  tmp <- list()
+  
+  # Filter data for the specific TF
+  sub_tf_target_mapping <- tf_target_mapping %>% filter(tf == TF)
+  sub_networks <- networks %>% filter(tf == TF)
+  
+  # Select and clean relevant columns for model analysis
+  sub_tf_target_mapping_acc <- sub_tf_target_mapping %>%
+    select(is_S2Mb, is_M2Kb, is_S2Kb, is_S100Kb, is_M100Kb, is_ppi, is_motif, gene_symbol, is_coexpressed) %>%
+    distinct() %>%
+    group_by(gene_symbol) %>%
+    summarize(across(c(is_S2Mb, is_M2Kb, is_S2Kb, is_S100Kb, is_M100Kb, is_ppi, is_motif, is_coexpressed),
+                     ~ as.logical(sum(.))))
+  
+  # Join gene data with networks and tested genes
+  sub_tested_genes <- tested_genes %>%
+    left_join(sub_networks, by = "gene_symbol") %>%
+    left_join(sub_tf_target_mapping_acc, by = "gene_symbol") %>%
+    select(-tf) %>%
+    replace(is.na(.), 0)
+# -----------------------------------------------------------------------------------------------------------------------------
+  # Logistic regression models for various annotations
+  # S2Mb
 
-            networks %>% filter(tf == TF) -> sub_networks  
+  # Coexpression model for S2Mb
+  s2mb_model <- glm("is_S2Mb ~ is_coexpressed + tpm_total", data = sub_tested_genes, family = "binomial")
+  s2mb_results <- extract_model_results(s2mb_model, "is_coexpressed", "method1", TF)
+  tmp <- cbind(tmp, s2mb_results)
+  
+  # Motif model for S2Mb
+  s2mb_model <- glm("is_S2Mb ~ is_motif + tpm_total", data = sub_tested_genes, family = "binomial")
+  motif_results <- extract_model_results(s2mb_model, "is_motif", "method1", TF)
+  tmp <- cbind(tmp, motif_results)
+  
+  # PPI model for S2Mb
+  s2mb_model <- glm("is_S2Mb ~ is_ppi + tpm_total", data = sub_tested_genes, family = "binomial")
+  ppi_results <- extract_model_results(s2mb_model, "is_ppi", "method1", TF)
+  tmp <- cbind(tmp, ppi_results)
+  
+  # Network model for S2Mb
+  s2mb_model <- glm("is_S2Mb ~ is_network + tpm_total", data = sub_tested_genes, family = "binomial")
+  network_results <- extract_model_results(s2mb_model, "is_network", "method1", TF)
+  tmp <- cbind(tmp, network_results)
 
-            sub_tf_target_mapping %>% select(is_S2Mb, is_M2Kb, is_S2Kb, is_ppi, is_motif, gene_symbol, is_coexpressed) %>% distinct() -> sub_tf_target_mapping_acc
-            sub_tf_target_mapping_acc %>% group_by(gene_symbol) %>% 
-                                    summarise(across(c(is_S2Mb, 
-                                                       is_M2Kb, 
-                                                       is_S2Kb, 
-                                                       is_ppi, 
-                                                       is_motif,
-						       is_coexpressed), function(x){as.logical(sum(x))})) -> sub_tf_target_mapping_acc
-            left_join(tested_genes, sub_networks, by = c('gene_symbol')) -> sub_tested_genes
-            left_join(sub_tested_genes, sub_tf_target_mapping_acc) -> sub_tested_genes                      	
-            sub_tested_genes %>% select(-tf) -> sub_tested_genes
-            sub_tested_genes %>% replace(is.na(.), 0) -> sub_tested_genes
+# -----------------------------------------------------------------------------------------------------------------------------
 
+  # M2Kb
 
-		#S2Mb
+  # Coexpression model for M2Kb
+  m2kb_model <- glm("is_M2Kb ~ is_coexpressed + tpm_total", data = sub_tested_genes, family = "binomial")
+  m2kb_results <- extract_model_results(m2kb_model, "is_coexpressed", "method2", TF)
+  tmp <- cbind(tmp, m2kb_results)
+  
+  # Motif model for M2Kb
+  m2kb_model <- glm("is_M2Kb ~ is_motif + tpm_total", data = sub_tested_genes, family = "binomial")
+  motif_results <- extract_model_results(m2kb_model, "is_motif", "method2", TF)
+  tmp <- cbind(tmp, motif_results)
+  
+  # PPI model for M2Kb
+  m2kb_model <- glm("is_M2Kb ~ is_ppi + tpm_total", data = sub_tested_genes, family = "binomial")
+  ppi_results <- extract_model_results(m2kb_model, "is_ppi", "method2", TF)
+  tmp <- cbind(tmp, ppi_results)
+  
+  # Network model for M2Kb
+  m2kb_model <- glm("is_M2Kb ~ is_network + tpm_total", data = sub_tested_genes, family = "binomial")
+  network_results <- extract_model_results(m2kb_model, "is_network", "method2", TF)
+  tmp <- cbind(tmp, network_results)
+# -----------------------------------------------------------------------------------------------------------------------------
 
-            log_model_target_m1 = glm("is_S2Mb ~ is_coexpressed + tpm_total",
-                                    data = sub_tested_genes, family="binomial")
+  # S2Kb
 
-            odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,1]))
-            conf_int_l = exp(as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,1] - (data.table(summary(log_model_target_m1)$coefficients)[2,2] * 1.96)))
-            conf_int_u = exp(as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,1] + (data.table(summary(log_model_target_m1)$coefficients)[2,2] * 1.96)))
-            pvalue = as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,4])
+  # Coexpression model for S2Kb
+  s2kb_model <- glm("is_S2Kb ~ is_coexpressed + tpm_total", data = sub_tested_genes, family = "binomial")
+  s2kb_results <- extract_model_results(s2kb_model, "is_coexpressed", "method3", TF)
+  tmp <- cbind(tmp, s2kb_results)
+  
+  # Motif model for S2Kb
+  s2kb_model <- glm("is_S2Kb ~ is_motif + tpm_total", data = sub_tested_genes, family = "binomial")
+  motif_results <- extract_model_results(s2kb_model, "is_motif", "method3", TF)
+  tmp <- cbind(tmp, motif_results)
+  
+  # PPI model for S2Kb
+  s2kb_model <- glm("is_S2Kb ~ is_ppi + tpm_total", data = sub_tested_genes, family = "binomial")
+  ppi_results <- extract_model_results(s2kb_model, "is_ppi", "method3", TF)
+  tmp <- cbind(tmp, ppi_results)
+  
+  # Network model for S2Kb
+  s2kb_model <- glm("is_S2Kb ~ is_network + tpm_total", data = sub_tested_genes, family = "binomial")
+  network_results <- extract_model_results(s2kb_model, "is_network", "method3", TF)
+  tmp <- cbind(tmp, network_results)
 
-            tmp = cbind(tmp, c("is_coexpressed", "method1", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
-            log2(odds_ratio)
-            print("R^2")
-            print(r2Log(log_model_target_m1))
+# -----------------------------------------------------------------------------------------------------------------------------
 
+  # M100Kb
 
+  # Coexpression model for M100Kb
+  m100kb_model <- glm("is_M100Kb ~ is_coexpressed + tpm_total", data = sub_tested_genes, family = "binomial")
+  m100kb_results <- extract_model_results(m100kb_model, "is_coexpressed", "method5", TF)
+  tmp <- cbind(tmp, m100kb_results)
+  
+  # Motif model for M100Kb
+  m100kb_model <- glm("is_M100Kb ~ is_motif + tpm_total", data = sub_tested_genes, family = "binomial")
+  motif_results <- extract_model_results(m100kb_model, "is_motif", "method5", TF)
+  tmp <- cbind(tmp, motif_results)
+  
+  # PPI model for M100Kb
+  m100kb_model <- glm("is_M100Kb ~ is_ppi + tpm_total", data = sub_tested_genes, family = "binomial")
+  ppi_results <- extract_model_results(m100kb_model, "is_ppi", "method5", TF)
+  tmp <- cbind(tmp, ppi_results)
+  
+  # Network model for M100Kb
+  m100kb_model <- glm("is_M100Kb ~ is_network + tpm_total", data = sub_tested_genes, family = "binomial")
+  network_results <- extract_model_results(m100kb_model, "is_network", "method5", TF)
+  tmp <- cbind(tmp, network_results)
+# -----------------------------------------------------------------------------------------------------------------------------
 
-            log_model_target_m1 = glm("is_S2Mb ~ is_motif + tpm_total",
-                                    data = sub_tested_genes, family="binomial")
+  # S100Kb
 
-            odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,1]))
-            conf_int_l = exp(as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,1] - (data.table(summary(log_model_target_m1)$coefficients)[2,2] * 1.96)))
-            conf_int_u = exp(as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,1] + (data.table(summary(log_model_target_m1)$coefficients)[2,2] * 1.96)))
-            pvalue = as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,4])
-    
-            tmp = cbind(tmp, c("is_motif", "method1", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
-            log2(odds_ratio)
-            print("R^2")
-            print(r2Log(log_model_target_m1))
+  # Coexpression model for S100Kb
+  s100kb_model <- glm("is_S100Kb ~ is_coexpressed + tpm_total", data = sub_tested_genes, family = "binomial")
+  s100kb_results <- extract_model_results(s100kb_model, "is_coexpressed", "method4", TF)
+  tmp <- cbind(tmp, s100kb_results)
+  
+  # Motif model for S100Kb
+  s100kb_model <- glm("is_S100Kb ~ is_motif + tpm_total", data = sub_tested_genes, family = "binomial")
+  motif_results <- extract_model_results(s100kb_model, "is_motif", "method4", TF)
+  tmp <- cbind(tmp, motif_results)
+  
+  # PPI model for S100Kb
+  s100kb_model <- glm("is_S100Kb ~ is_ppi + tpm_total", data = sub_tested_genes, family = "binomial")
+  ppi_results <- extract_model_results(s100kb_model, "is_ppi", "method4", TF)
+  tmp <- cbind(tmp, ppi_results)
+  
+  # Network model for S100Kb
+  s100kb_model <- glm("is_S100Kb ~ is_network + tpm_total", data = sub_tested_genes, family = "binomial")
+  network_results <- extract_model_results(s100kb_model, "is_network", "method4", TF)
+  tmp <- cbind(tmp, network_results)
 
-			log_model_target_m1 = glm("is_S2Mb ~ is_ppi + tpm_total",
-                                      data = sub_tested_genes, family="binomial")
+# -----------------------------------------------------------------------------------------------------------------------------
 
-            odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,1]))
-            conf_int_l = exp(as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,1] - (data.table(summary(log_model_target_m1)$coefficients)[2,2] * 1.96)))
-            conf_int_u = exp(as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,1] + (data.table(summary(log_model_target_m1)$coefficients)[2,2] * 1.96)))
-            pvalue = as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,4])
-
-            tmp = cbind(tmp, c("is_ppi", "method1", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
-            log2(odds_ratio)
-            print("R^2")
-            print(r2Log(log_model_target_m1))
-
-			log_model_target_m1 = glm(paste0("is_S2Mb ~ is_network + tpm_total"),
-        	                                      data = sub_tested_genes, family="binomial")
-       	    odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,1]))
-            conf_int_l = exp(as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,1] - (data.table(summary(log_model_target_m1)$coefficients)[2,2] * 1.96)))
-            conf_int_u = exp(as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,1] + (data.table(summary(log_model_target_m1)$coefficients)[2,2] * 1.96)))
-            pvalue = as.numeric(data.table(summary(log_model_target_m1)$coefficients)[2,4])
-            tmp = cbind(tmp, c("network", "method1", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
-            log2(odds_ratio)
-            print("R^2")
-            print(r2Log(log_model_target_m1))
-
-			#---------------------------------------------------------------------------------------------------------------------------------------------------------------
-			# M2Kb
-            log_model_target_m2 = glm("is_M2Kb ~ is_coexpressed + tpm_total",
-                                    data = sub_tested_genes, family="binomial")
-
-            odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,1]))
-            conf_int_l = exp(as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,1] - (data.table(summary(log_model_target_m2)$coefficients)[2,2] * 1.96)))
-            conf_int_u = exp(as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,1] + (data.table(summary(log_model_target_m2)$coefficients)[2,2] * 1.96)))
-            pvalue = as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,4])
-
-            tmp = cbind(tmp, c("is_coexpressed", "method2", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
-            log2(odds_ratio)
-            print("R^2")
-            print(r2Log(log_model_target_m2))
-
-
-
-            log_model_target_m2 = glm("is_M2Kb ~ is_motif + tpm_total",
-                                    data = sub_tested_genes, family="binomial") 
-
-            odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,1])) 
-            conf_int_l = exp(as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,1] - (data.table(summary(log_model_target_m2)$coefficients)[2,2] * 1.96)))
-            conf_int_u = exp(as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,1] + (data.table(summary(log_model_target_m2)$coefficients)[2,2] * 1.96)))
-            pvalue = as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,4]) 
-            log2(odds_ratio) 
-            pvalue 
-
-            tmp = cbind(tmp, c("is_motif", "method2", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
-
-            print("R^2")
-            print(r2Log(log_model_target_m2))
-
-			log_model_target_m2 = glm("is_M2Kb ~ is_ppi + tpm_total",
-                                                data = sub_tested_genes, family="binomial")
-
-            odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,1]))
-            conf_int_l = exp(as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,1] - (data.table(summary(log_model_target_m2)$coefficients)[2,2] * 1.96)))
-            conf_int_u = exp(as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,1] + (data.table(summary(log_model_target_m2)$coefficients)[2,2] * 1.96)))
-            pvalue = as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,4])
-            log2(odds_ratio) 
-            pvalue 
-
-            tmp = cbind(tmp, c("is_ppi", "method2", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
-
-            print("R^2")
-            print(r2Log(log_model_target_m2))
-    
-            log_model_target_m2 = glm(paste0("is_M2Kb ~ is_network + tpm_total"),
-                                          data = sub_tested_genes, family="binomial")
-            odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,1]))
-            conf_int_l = exp(as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,1] - (data.table(summary(log_model_target_m2)$coefficients)[2,2] * 1.96)))
-            conf_int_u = exp(as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,1] + (data.table(summary(log_model_target_m2)$coefficients)[2,2] * 1.96)))
-            pvalue = as.numeric(data.table(summary(log_model_target_m2)$coefficients)[2,4])
-            tmp = cbind(tmp, c("network", "method2", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
-
-            print("R^2")
-            print(r2Log(log_model_target_m2))
-
-                        #---------------------------------------------------------------------------------------------------------------------------------------------------------------                        
-			# S2Kb
-            log_model_target_m3 = glm("is_S2Kb ~ is_coexpressed + tpm_total",
-                                    data = sub_tested_genes, family="binomial")
-
-            odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,1]))
-            conf_int_l = exp(as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,1] - (data.table(summary(log_model_target_m3)$coefficients)[2,2] * 1.96)))
-            conf_int_u = exp(as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,1] + (data.table(summary(log_model_target_m3)$coefficients)[2,2] * 1.96)))
-            pvalue = as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,4])
-
-            tmp = cbind(tmp, c("is_coexpressed", "method3", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
-            log2(odds_ratio)
-            print("R^2")
-            print(r2Log(log_model_target_m3))
-
-
-
-
-            log_model_target_m3 = glm("is_S2Kb ~ is_motif + tpm_total",
-                                    data = sub_tested_genes, family="binomial") 
-
-            odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,1])) 
-            conf_int_l = exp(as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,1] - (data.table(summary(log_model_target_m3)$coefficients)[2,2] * 1.96)))
-            conf_int_u = exp(as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,1] + (data.table(summary(log_model_target_m3)$coefficients)[2,2] * 1.96)))
-            pvalue = as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,4]) 
-            log2(odds_ratio) 
-            pvalue 
-
-            tmp = cbind(tmp, c("is_motif", "method3", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
-
-            print("R^2")
-            print(r2Log(log_model_target_m3))
-
-			log_model_target_m3 = glm("is_S2Kb ~ is_ppi + tpm_total",
-                                                data = sub_tested_genes, family="binomial")
-
-            odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,1]))
-            conf_int_l = exp(as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,1] - (data.table(summary(log_model_target_m3)$coefficients)[2,2] * 1.96)))
-            conf_int_u = exp(as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,1] + (data.table(summary(log_model_target_m3)$coefficients)[2,2] * 1.96)))
-            pvalue = as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,4])
-            log2(odds_ratio) 
-            pvalue 
-
-            tmp = cbind(tmp, c("is_ppi", "method3", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
-
-            print("R^2")
-            print(r2Log(log_model_target_m3))
-
-log_model_target_m3 = glm(paste0("is_S2Kb ~ is_network + tpm_total"),
-                                          data = sub_tested_genes, family="binomial")
-            odds_ratio = exp(as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,1]))
-            conf_int_l = exp(as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,1] - (data.table(summary(log_model_target_m3)$coefficients)[2,2] * 1.96)))
-            conf_int_u = exp(as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,1] + (data.table(summary(log_model_target_m3)$coefficients)[2,2] * 1.96)))
-            pvalue = as.numeric(data.table(summary(log_model_target_m3)$coefficients)[2,4])
-            tmp = cbind(tmp, c("network", "method3", TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
-
-            print("R^2")
-            print(r2Log(log_model_target_m3))
-	#---------------------------------------------------------------------------------------------------------------------------------------------------------------
-    	print(paste0("Done with ", TF))
-        enrich_temp = matrix(tmp, ncol=7, byrow=TRUE)
-        as.data.frame(enrich_temp, stringsAsFactors=FALSE)
+  print(paste0("Done with ", TF))
+  enrich_temp = matrix(tmp, ncol=7, byrow=TRUE)
+  return(as.data.frame(enrich_temp, stringsAsFactors=FALSE))
 }
 
+# Convert the result to a proper data.table with appropriate column names
 enrich_scores = rbindlist(enrich_scores)
 colnames(enrich_scores) = c("variable", "method", "TF", "odds", "conf_int_l", "conf_int_u", "pvalue")
 
 
-
+# Write the results to a file
 fwrite(enrich_scores, "data/1-network_enrichment/enrich_scores_remap_all_tfs_K562.tsv", col.names = T, row.names = F, quote = F, sep="\t")
-fwrite(enrich_scores, "data/s3-network_enrichment/enrich_scores_remap_all_tfs_K562.tsv", col.names = T, row.names = F, quote = F, sep="\t")
 
+cat("Analysis completed and results saved to data/1-network_enrichment/enrich_scores_remap_all_tfs_K562.tsv\n")
 

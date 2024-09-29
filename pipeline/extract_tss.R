@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/bin/env Rscript
 
 # Suppress package startup messages to prevent clutter
 suppressPackageStartupMessages({

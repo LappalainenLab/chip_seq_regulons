@@ -16,7 +16,8 @@ library(tidyr)
 library(cowplot)
 
 #---------------fixing-paths------------------------
-here::i_am("README.md")
+setwd(here())
+
 data_dir = "data/2-plot_decoupler_filter_benchmark_across_methods/"
 plot_dir = "plots/s5_s7-plot_decoupler_filtering_benchmark/"
 #---------------------------------------------------
@@ -33,11 +34,11 @@ foreach(ct = cells) %do% {
 	data %>% pivot_wider(names_from = metric, values_from = score, values_fn=mean) %>%
 		filter(method == "consensus_estimate")-> to_plot
 	
-	to_plot$group = factor(to_plot$group, levels=c("S2Mb", "M2Kb", "S2Kb"))
+	to_plot$group = factor(to_plot$group, levels=c("S2Mb", "M100Kb", "S100Kb", "M2Kb", "S2Kb"))
 	to_plot$filter =  factor(to_plot$filter, levels=c("random", "no", "motif", "open", "ccre"))
 	p1 = ggplot(data = to_plot, aes(x = mcauroc, y = mcauprc, shape = filter)) +
 		geom_point() + 
-		facet_wrap(~group) +
+		facet_wrap(~group, ncol=5) +
 		theme_pubr() +
 		theme(axis.text = element_text(size=9),
 			legend.position = c(0.5, 0.1),
@@ -47,47 +48,51 @@ foreach(ct = cells) %do% {
 			legend.text = element_text(size=9),
                 	legend.title = element_text(size=9))
 	
-	ggsave(plot = p1, filename = paste0(plot_dir, "decoupler_bench_scatter_", ct, "_filtering.svg"), width=210, height=70, units="mm", dpi=720, device = "svg")
+	ggsave(plot = p1, filename = paste0(plot_dir, "decoupler_bench_scatter_", ct, "_filtering.svg"), width=210, height=60, units="mm", dpi=720, device = "svg")
 	
-	data$group = factor(data$group, levels=c("S2Mb", "M2Kb", "S2Kb"))
+	data$group = factor(data$group, levels=c("S2Mb", "M100Kb", "S100Kb", "M2Kb", "S2Kb"))
 	
 	p2 = ggviolin(data = data %>% filter(metric == "mcauprc") %>% mutate(filter = replace_na(filter, "no"),
-										group = factor(group, levels=c("S2Mb", "M2Kb", "S2Kb"))),
+										group = factor(group, levels=c("S2Mb", "M100Kb", "S100Kb", "M2Kb", "S2Kb"))),
 					x = "filter",
 					y = "score",
 					add = "boxplot", 
 					add.params = list(fill = "white"))+
-		geom_pwc(method = "wilcox_test", label = "p.adj.format", ref.group="random",
-				p.adjust.method = "fdr", vjust = 0.5, label.size = 2, bracket.nudge.y = 0.1, tip.length = 0, hide.ns=T) +
-		geom_pwc(method = "wilcox_test", label = "p.adj.format", ref.group="no",
-        	                p.adjust.method = "fdr", vjust = 0.5, label.size = 2, bracket.nudge.y = 0.3, tip.length = 0, hide.ns=T) +
-		facet_wrap(~group) +
+		geom_pwc(method = "wilcox_test", label = "p.adj.signif", ref.group="random",
+				p.adjust.method = "fdr", vjust = 0.0, label.size = 2, bracket.nudge.y = 0.0, tip.length = 0, hide.ns=T, 
+				remove.bracket = T) +
+		geom_pwc(method = "wilcox_test", label = "p.adj.signif", ref.group="no",
+        	                p.adjust.method = "fdr", vjust = 0.0, label.size = 2, bracket.nudge.y = 0.0, tip.length = 0, hide.ns=T,
+				remove.bracket = T) +
+		facet_wrap(~group, ncol=5) +
 		ylab("mcauprc") +
 		theme(axis.text.x = element_text(size=9, angle = 30, vjust=0.75),
 			axis.text.y = element_text(size=9),
 			axis.title.y = element_text(size=9),
 			axis.title.x = element_blank())
-	ggsave(plot = p2, filename = paste0(plot_dir, "decoupler_bench_box_mcauprc_", ct, "_filtering.svg"), dpi=720, width=210, height=70, units="mm",device = "svg")
+	ggsave(plot = p2, filename = paste0(plot_dir, "decoupler_bench_box_mcauprc_", ct, "_filtering.svg"), dpi=720, width=210, height=60, units="mm",device = "svg")
 	
 	
 	
 	p3 = ggviolin(data = data %>% filter(metric == "mcauroc") %>% mutate(filter = replace_na(filter, "no"),
-        	                                                                group = factor(group, levels=c("S2Mb", "M2Kb", "S2Kb"))),
+        	                                                                group = factor(group, levels=c("S2Mb", "M100Kb", "S100Kb", "M2Kb", "S2Kb"))),
                 	                x = "filter",
                         	        y = "score",
                                 	add = "boxplot",
                                 	add.params = list(fill = "white"))+
-        	geom_pwc(method = "wilcox_test", label = "p.adj.format", ref.group="random",
-                	        p.adjust.method = "fdr", vjust = 0.5, label.size = 2, bracket.nudge.y = 0.1, tip.length = 0, hide.ns=T) +
-        	geom_pwc(method = "wilcox_test", label = "p.adj.format", ref.group="no",
-                	        p.adjust.method = "fdr", vjust = 0.5, label.size = 2, bracket.nudge.y = 0.3, tip.length = 0, hide.ns=T) +
-        	facet_wrap(~group) +
+        	geom_pwc(method = "wilcox_test", label = "p.adj.signif", ref.group="random",
+                	        p.adjust.method = "fdr", vjust = 0.0, label.size = 2, bracket.nudge.y = 0.0, tip.length = 0, hide.ns=T,
+				remove.bracket = T) +
+        	geom_pwc(method = "wilcox_test", label = "p.adj.signif", ref.group="no",
+                	        p.adjust.method = "fdr", vjust = 0.0, label.size = 2, bracket.nudge.y = 0.0, tip.length = 0, hide.ns=T, 
+				remove.bracket = T) +
+        	facet_wrap(~group, ncol=5) +
 		ylab("mcauroc") +
         	theme(axis.text.x = element_text(size=9, angle = 30, vjust=0.75),
                 	axis.text.y = element_text(size=9),
                 	axis.title.y = element_text(size=9),
                 	axis.title.x = element_blank())
-	ggsave(plot = p3, filename = paste0(plot_dir, "decoupler_bench_box_mcauroc_", ct, "_filtering.svg"), dpi=720, width=210, height=70, units="mm",device = "svg")
+	ggsave(plot = p3, filename = paste0(plot_dir, "decoupler_bench_box_mcauroc_", ct, "_filtering.svg"), dpi=720, width=210, height=60, units="mm",device = "svg")
 } 
 
 

@@ -12,11 +12,12 @@ library(dplyr)
 library(gridExtra)
 library(UpSetR)
 library(ggimage)
+library(RColorBrewer)
 
 
 source("figures/fig_style.R")
 
-library(RColorBrewer)
+setwd(here())
 
 v100 = fread("data/regulons/TF_target_mapping_filtered_merged_K562_enc_v100_with_ppi_with_dnase_with_atac.tsv", nThread=10)
 v109 = fread("data/regulons/TF_target_mapping_filtered_merged_K562_with_ppi_with_dnase_with_atac.tsv", nThread=10)

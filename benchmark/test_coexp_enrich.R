@@ -28,7 +28,7 @@ source("figures/fig_style.R")
 set.seed(123)
 
 # Define cell lines to iterate over
-cell_lines <- c("HepG2", "MCF7", "GM12878", "K562")
+cell_lines <- c("K562")
 
 # Iterate over cell lines and perform enrichment analysis
 foreach(cl = cell_lines) %do% {
@@ -40,7 +40,7 @@ foreach(cl = cell_lines) %do% {
   # Filter and keep only relevant columns, removing duplicates
   tf_target_mapping <- tf_target_mapping %>%
     select(n_motifs, n_motifs_hoco, is_dnase, is_S2Mb, is_S2Kb, is_M2Kb, is_S100Kb, is_M100Kb,
-           is_atac, ensembl_gene_id, tpm_total, is_ppi, tf, gene_symbol, accession) %>%
+           is_atac, ensembl_gene_id, tpm_total, is_coexpressed, tf, gene_symbol, accession) %>%
     distinct()
 
   # Create a list of tested genes (unique gene symbols, tpm_total, and ensembl_gene_id)
@@ -71,7 +71,7 @@ foreach(cl = cell_lines) %do% {
       # Summarize binary features for each gene
       sub_tf_target_mapping_acc <- sub_tf_target_mapping_acc %>%
         group_by(ensembl_gene_id) %>%
-        summarise(across(c(is_S2Mb, is_M2Kb, is_S2Kb, is_M100Kb, is_S100Kb, is_ppi),
+        summarise(across(c(is_S2Mb, is_M2Kb, is_S2Kb, is_M100Kb, is_S100Kb, is_coexpressed),
                          ~ as.logical(sum(.)))) %>%
         ungroup()
 
@@ -83,11 +83,11 @@ foreach(cl = cell_lines) %do% {
 
       # List of models to evaluate (S2Mb, M2Kb, S2Kb, M100Kb, S100Kb)
       models <- list(
-        "method1" = glm(is_S2Mb ~ is_ppi + tpm_total, data = sub_tested_genes, family = "binomial"),
-        "method2" = glm(is_M2Kb ~ is_ppi + tpm_total, data = sub_tested_genes, family = "binomial"),
-        "method3" = glm(is_S2Kb ~ is_ppi + tpm_total, data = sub_tested_genes, family = "binomial"),
-        "method5" = glm(is_M100Kb ~ is_ppi + tpm_total, data = sub_tested_genes, family = "binomial"),
-        "method4" = glm(is_S100Kb ~ is_ppi + tpm_total, data = sub_tested_genes, family = "binomial")
+        "method1" = glm(is_S2Mb ~ is_coexpressed + tpm_total, data = sub_tested_genes, family = "binomial"),
+        "method2" = glm(is_M2Kb ~ is_coexpressed + tpm_total, data = sub_tested_genes, family = "binomial"),
+        "method3" = glm(is_S2Kb ~ is_coexpressed + tpm_total, data = sub_tested_genes, family = "binomial"),
+        "method5" = glm(is_M100Kb ~ is_coexpressed + tpm_total, data = sub_tested_genes, family = "binomial"),
+        "method4" = glm(is_S100Kb ~ is_coexpressed + tpm_total, data = sub_tested_genes, family = "binomial")
       )
 
       # Iterate over models and calculate odds ratios, p-values, and shuffled results for is_S2Mb
@@ -105,7 +105,7 @@ foreach(cl = cell_lines) %do% {
         pvalue <- coeff[4]
 
         # Append results to tmp
-        tmp <- rbind(tmp, c("is_ppi", model_name, TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
+        tmp <- rbind(tmp, c("is_coexpressed", model_name, TF, log2(odds_ratio), log2(conf_int_l), log2(conf_int_u), pvalue))
 
         # Special handling for is_S2Mb: run permutation model
         if (model_name == "method1") {
@@ -121,7 +121,7 @@ foreach(cl = cell_lines) %do% {
           shuffled_pvalue <- as.numeric(permglm_s2mb$COEFFICENTS[2, 5])
 
           # Append shuffled results for is_S2Mb
-          tmp <- rbind(tmp, c("is_ppi", "shuffled", TF, log2(shuffled_odds_ratio), 
+          tmp <- rbind(tmp, c("is_coexpressed", "shuffled", TF, log2(shuffled_odds_ratio), 
                               log2(shuffled_conf_int_l), log2(shuffled_conf_int_u), shuffled_pvalue))
         }
       }
@@ -140,6 +140,6 @@ foreach(cl = cell_lines) %do% {
   colnames(enrich_scores) <- c("variable", "method", "TF", "odds", "conf_int_l", "conf_int_u", "pvalue")
 
   # Save results to a file
-  output_file <- sprintf("data/s3-network_enrichment/enrich_scores_remap_all_tfs_%s.tsv", cl)
+  output_file <- sprintf("data/s3-network_enrichment/enrich_scores_remap_all_tfs_%s_coex.tsv", cl)
   fwrite(enrich_scores, output_file, col.names = TRUE, row.names = FALSE, sep = "\t")
 }

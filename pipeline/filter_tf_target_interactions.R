@@ -1,4 +1,4 @@
-#!/usr/bin/Rscript
+#!/usr/bin/env Rscript
 
 # Load required packages while suppressing startup messages
 suppressPackageStartupMessages({

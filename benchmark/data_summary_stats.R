@@ -1,13 +1,16 @@
+#!/usr/bin/env Rscript
+
 # Load required packages
 library(data.table)
 library(dplyr)
 library(doParallel)
+library(here)
 
 # Register parallel processing
 registerDoParallel(cores=20)
 
 # Set working directory
-setwd("/proj/lappalainen_lab1/users/marii/chip_seq_ann")
+setwd(here())
 
 
 # Define data directories
@@ -30,6 +33,8 @@ foreach (ct = cells) %do% {
                           is_S2Mb,
                           is_S2Kb,
                           is_M2Kb,
+                          is_S100Kb,
+                          is_M100Kb,
                           is_atac,
                           ensembl_gene_id,
                           tpm_total,
@@ -40,11 +45,11 @@ foreach (ct = cells) %do% {
                   distinct() -> data
 
 	# Filter the data based on method conditions
-	data %>% filter(is_S2Mb | is_M2Kb | is_S2Kb) -> data_full
+	data %>% filter(is_S2Mb | is_M2Kb | is_S2Kb | is_M100Kb | is_S100Kb) -> data_full
 
         print(colnames(data))
 	# Iterate through each method
-	foreach(m = c("S2Mb", "M2Kb", "S2Kb")) %do% {
+	foreach(m = c("S2Mb", "M2Kb", "S2Kb", "M100Kb", "S100Kb")) %do% {
 		# Filter interactions for the current regulon
 		data_full %>% filter(!!as.name(paste0("is_", m)) == T) -> data
 		

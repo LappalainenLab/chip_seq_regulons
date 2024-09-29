@@ -12,18 +12,19 @@ library(dplyr)
 library(gridExtra)
 library(UpSetR)
 library(ggimage)
-
+library(RColorBrewer)
 
 source("figures/fig_style.R")
 
-library(RColorBrewer)
+setwd(here())
+
 cell_line = c("K562", "HepG2", "MCF7", "GM12878")
 foreach(cl = cell_line) %do% {
-	input_file <- sprintf("data/regulons/TF_target_mapping_filtered_merged_%s_with_ppi_with_dnase_with_atac_with_motifs_with_ccres.tsv", cl)
+	input_file <- sprintf("data/regulons/TF_target_mapping_filtered_merged_%s_with_ppi_with_dnase_with_atac_with_motifs_with_ccres_cleaned.tsv", cl)
 
 	to_plot = fread(input_file)
 	
-	to_plot <- to_plot %>% dplyr::mutate(pair = paste(tf, gene_symbol, sep = "_")) %>% filter(is_S2Mb | is_S2Kb | is_M2Kb)
+	to_plot <- to_plot %>% dplyr::mutate(pair = paste(tf, gene_symbol, sep = "_")) %>% filter(is_S2Mb | is_S2Kb | is_M2Kb | is_M100Kb | is_S100Kb)
 
 	test_list = list("S2Mb" = to_plot%>% 
                     				  filter(is_S2Mb) %>% 
@@ -40,7 +41,17 @@ foreach(cl = cell_line) %do% {
         	                          dplyr::select(pair) %>%
                 	                  distinct() %>%
                         	          unlist(),
-        			"is_motif" = to_plot %>%
+        			"M100Kb" = to_plot %>%
+                                          filter(is_M100Kb) %>%
+                                          dplyr::select(pair) %>%
+                                          distinct() %>%
+                                          unlist(),
+                                "S100Kb" = to_plot %>%
+                                          filter(is_S100Kb) %>%
+                                          dplyr::select(pair) %>%
+                                          distinct() %>%
+                                          unlist(),
+				"is_motif" = to_plot %>%
                 	                  filter(!is.na(n_motifs) | ! is.na(n_motifs_hoco)) %>%
                         	          dplyr::select(pair) %>%
                                 	  distinct() %>%
@@ -66,7 +77,7 @@ foreach(cl = cell_line) %do% {
 	svg(plot_file)
 
 	p = upset(fromList(test_list), sets = c("S2Mb", "M2Kb", 
-			"S2Kb", "is_motif", "is_PLS", "is_pELS", "is_dELS"), 
+			"S2Kb", "S100Kb", "M100Kb", "is_motif", "is_PLS", "is_pELS", "is_dELS"), 
 		mb.ratio = c(0.7, 0.3),
         	order.by="freq",
 	        mainbar.y.label = "Number of TF-target gene pairs",
