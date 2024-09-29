@@ -1,4 +1,4 @@
-name: chip_seq_reg_1
+name: chip_seq_reg
 channels:
   - bioconda
   - conda-forge

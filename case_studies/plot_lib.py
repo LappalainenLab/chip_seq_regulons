@@ -65,7 +65,7 @@ def plot_bubbles(megaheat, scale=0.35):
     ax.grid(axis='x')
     nc = colors.TwoSlopeNorm(vcenter=0)
     scatter = ax.scatter(x=megaheat["Network"], y=megaheat["TF"], s=ns, c=megaheat["score"], 
-                cmap="RdBu_r", norm=nc,  clip_on=False)
+                cmap="RdBu_r", norm=nc,  clip_on=False, edgecolors='black')
     ax.set_axisbelow(True)
     ax.set_xlabel("Regulon", fontsize=7)
     yticks = ax.get_yticklabels(minor=False, which=None)
