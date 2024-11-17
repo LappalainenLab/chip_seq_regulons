@@ -3,7 +3,6 @@ library(cowplot)
 library(ggpubr)
 library(see)
 library(data.table)
-library(here)
 library(jtools)
 library(stringr)
 library(biomaRt)
@@ -12,8 +11,6 @@ library(fastglm)
 library(ggrepel)
 library(dplyr)
 library(RColorBrewer)
-
-setwd(here())
 
 # Plot style
 source("figures/fig_style.R")

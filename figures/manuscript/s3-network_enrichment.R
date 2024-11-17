@@ -3,7 +3,6 @@ library(cowplot)
 library(data.table)
 library(grid)
 library(gridExtra)
-library(here)
 library(gtable)
 library(stringr)
 library(ggplot2)
@@ -13,8 +12,6 @@ library(RColorBrewer)
 library(see)
 library(ggbreak)
 library(foreach)
-
-setwd(here())
 
 # Plot style
 source("figures/fig_style.R")

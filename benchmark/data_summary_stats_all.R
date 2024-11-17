@@ -4,14 +4,9 @@
 library(data.table)
 library(dplyr)
 library(doParallel)
-library(here)
 
 # Register parallel processing
 registerDoParallel(cores=20)
-
-# Set working directory
-setwd(here())
-
 
 # Define data directories
 data_dir = "data/regulons/"

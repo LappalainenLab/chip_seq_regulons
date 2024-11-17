@@ -2,7 +2,6 @@ library(data.table)
 library(grid)
 library(gtable)
 library(foreach)
-library(here)
 library(jtools)
 library(stringr)
 library(dplyr)
@@ -16,8 +15,6 @@ library(RColorBrewer)
 
 
 source("figures/fig_style.R")
-
-setwd(here())
 
 v100 = fread("data/regulons/TF_target_mapping_filtered_merged_K562_enc_v100_with_ppi_with_dnase_with_atac.tsv", nThread=10)
 v109 = fread("data/regulons/TF_target_mapping_filtered_merged_K562_with_ppi_with_dnase_with_atac.tsv", nThread=10)

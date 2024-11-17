@@ -29,12 +29,12 @@ then
 fi 
 
 # Extract highest expressed TSS
-Rscript ./pipeline/extract_tss.R $CELLS $RNA_FILES $DATA_PATH
+Rscript pipeline/scripts/extract_tss.R $CELLS $RNA_FILES $DATA_PATH
 echo "Extracted TSS 1"
 
 
 # Extract top 50% expressed TSS 
-Rscript ./pipeline/extract_multiple_tss.R $CELLS $RNA_FILES $DATA_PATH
+Rscript pipeline/scripts/extract_multiple_tss.R $CELLS $RNA_FILES $DATA_PATH
 echo "Extracted TSS 2"
 
 
@@ -70,25 +70,25 @@ echo "Mapped M2"
 
 
 # Distance filtering of interactions
-Rscript ./pipeline/filter_tf_target_interactions.R  $CELLS $DATA_PATH
+Rscript pipeline/scripts/filter_tf_target_interactions.R  $CELLS $DATA_PATH
 echo "Filtered"
 
 
 # Annotation with PPI, ATAC and DNAse
-Rscript ./pipeline/annotate.R $CELLS $ATAC_FILE $DNASE_FILE $DATA_PATH
+Rscript pipeline/scripts/annotate.R $CELLS $ATAC_FILE $DNASE_FILE $DATA_PATH
 echo "Annotated"
 
 # Annotation with TFBS
-Rscript ./pipeline/annotate_found_motifs.R $CELLS $DATA_PATH
+Rscript pipeline/scripts/annotate_found_motifs.R $CELLS $DATA_PATH
 echo "Annotated motifs"
 
 # Annotation with ENCODE cCREs"
-Rscript ./pipeline/annotate_encode_ccres.R $CELLS $DATA_PATH
+Rscript pipeline/scripts/annotate_encode_ccres.R $CELLS $DATA_PATH
 echo "Annotated cCREs"
 
 # Running cleanup
 filename=data/regulons/*$CELLS*ccres.tsv
-Rscript ./pipeline/dataset_cleanup.R $filename
+Rscript pipeline/scripts/dataset_cleanup.R $filename
 
 # Final file cleaning up
 cd data/regulons

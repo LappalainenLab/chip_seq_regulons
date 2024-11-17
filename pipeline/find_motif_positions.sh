@@ -18,7 +18,7 @@ do
 	echo $base
 
 	# Get respective TF peak files
-	Rscript ./pipeline/select_tf_peaks.R $base $chip_file $DATA_PATH"/motifs_ann/"$CELLS
+	Rscript pipeline/scripts/select_tf_peaks.R $base $chip_file $DATA_PATH"/motifs_ann/"$CELLS
         
         # Count the number of lines in the file
         line_count=$(wc -l < $DATA_PATH"/motifs_ann/"$CELLS"/"$base"_temp_peak_file.bed")

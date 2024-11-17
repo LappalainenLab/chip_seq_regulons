@@ -2,7 +2,6 @@ library(data.table)
 library(grid)
 library(gtable)
 library(foreach)
-library(here)
 library(jtools)
 library(stringr)
 library(dplyr)
@@ -15,8 +14,6 @@ library(ggimage)
 library(RColorBrewer)
 
 source("figures/fig_style.R")
-
-setwd(here())
 
 cell_line = c("K562", "HepG2", "MCF7", "GM12878")
 foreach(cl = cell_line) %do% {

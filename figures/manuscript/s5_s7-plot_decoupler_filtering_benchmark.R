@@ -8,7 +8,6 @@ library(data.table)
 library(foreach)
 library(dplyr)
 library(ggpubr)
-library(here)
 library(see)
 library(grid)
 library(gridExtra)
@@ -16,8 +15,6 @@ library(tidyr)
 library(cowplot)
 
 #---------------fixing-paths------------------------
-setwd(here())
-
 data_dir = "data/2-plot_decoupler_filter_benchmark_across_methods/"
 plot_dir = "plots/s5_s7-plot_decoupler_filtering_benchmark/"
 #---------------------------------------------------

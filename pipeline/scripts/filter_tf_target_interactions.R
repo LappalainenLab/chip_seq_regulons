@@ -7,13 +7,7 @@ library(data.table)
 library(stringr)
 library(argparser)
 library(dplyr)
-library(here)
 })
-
-here::i_am("README.md")
-
-# Set working directory
-setwd(here())
 
 # Parse command-line arguments
 # Create a parser

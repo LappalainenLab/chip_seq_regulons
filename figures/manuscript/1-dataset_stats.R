@@ -2,7 +2,6 @@ library(see)
 library(grid)
 library(ggpubr)
 library(data.table)
-library(here)
 library(jtools)
 library(stringr)
 library(biomaRt)
@@ -14,8 +13,6 @@ library(RColorBrewer)
 library(doParallel)
 
 registerDoParallel(cores=10)
-
-setwd(here())
 
 
 # Plot style

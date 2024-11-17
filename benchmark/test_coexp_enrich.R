@@ -2,7 +2,6 @@
 
 # Load necessary libraries
 library(data.table)
-library(here)
 library(dplyr)
 library(foreach)
 library(doParallel)
@@ -11,9 +10,6 @@ library(predictmeans)
 
 # Register parallel backend with 3 cores
 registerDoParallel(cores = 3)
-
-# Set working directory to the project's root
-setwd(here())
 
 # Function to calculate pseudo-R2 for logistic regression
 r2Log <- function(model) {

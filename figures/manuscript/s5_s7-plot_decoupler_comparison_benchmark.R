@@ -7,7 +7,6 @@ library(ggplot2); theme_set(theme_bw())
 library(data.table)
 library(dplyr)
 library(ggpubr)
-library(here)
 library(see)
 library(grid)
 library(gridExtra)
@@ -16,8 +15,6 @@ library(cowplot)
 library(foreach)
 
 #---------------fixing-paths------------------------
-setwd(here())
-
 processed_data_dir = "data/2-plot_decoupler_comparison_benchmark_across_cells/"
 plot_dir = "plots/s5_s7-plot_decoupler_comparison_benchmark/"
 #---------------------------------------------------

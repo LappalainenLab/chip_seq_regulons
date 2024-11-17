@@ -2,15 +2,12 @@ library(ggplot2); theme_set(theme_bw())
 library(data.table)
 library(dplyr)
 library(ggpubr)
-library(here)
 library(see)
 library(grid)
 library(gridExtra)
 library(tidyr)
 library(see)
 library(cowplot)
-
-setwd(here())
 
 palette = c()
 

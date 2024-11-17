@@ -2,7 +2,6 @@
 
 # Load necessary libraries
 library(data.table)
-library(here)
 library(jtools)
 library(stringr)
 library(biomaRt)
@@ -15,9 +14,6 @@ library(predictmeans)
 
 # Set up parallel processing with 10 cores
 registerDoParallel(cores = 10)
-
-# Set the working directory to the project root
-setwd(here())
 
 # Helper function to extract and format logistic model results
 extract_model_results <- function(model, variable, method, TF) {

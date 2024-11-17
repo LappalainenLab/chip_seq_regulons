@@ -8,11 +8,6 @@ library(foreach)
 library(WGCNA)
 library(stringr)
 
-here::i_am("README.md")
-
-# Set working directory
-setwd(here())
-
 # Define a function to remove version from IDs
 remove_version <- function(x) {
         unlist(str_split(x, pattern="[.]"))[1]

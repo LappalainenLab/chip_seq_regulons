@@ -1,5 +1,4 @@
 library(data.table)
-library(here)
 library(jtools)
 library(stringr)
 library(dplyr)
@@ -11,9 +10,6 @@ library(ggbreak)
 library(decoupleR)
 
 registerDoParallel(cores=10)
-
-setwd(here())
-
 
 # Plot style
 source("figures/fig_style.R")

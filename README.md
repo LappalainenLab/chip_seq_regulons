@@ -1,6 +1,6 @@
 # chip_seq_regulons
 
-This repo contains code used in the preprint "Specifying cellular context of transcription factor regulons for exploring context-specific gene regulation programs"
+This repo contains code used in the preprint ["Specifying cellular context of transcription factor regulons for exploring context-specific gene regulation programs"](https://doi.org/10.1101/2023.12.31.573765)
 
 ### Installation
 
@@ -13,6 +13,11 @@ conda env create --file environment.yaml
 conda activate chip_seq_reg
 ```
 
+### Sample data:
+
+Sample data is available in the data directory, which is structured to align with the pipeline's requirements. Ensure that the file names and folder hierarchy are maintained as provided. 
+
+
 ### Annotation pipeline:
 
 Contains scripts to run the S2Mb, S100Kb, S2Kb, M100Kb, and M2Kb TF-target gene annotation pipelines
@@ -22,7 +27,7 @@ Contains scripts to run the S2Mb, S100Kb, S2Kb, M100Kb, and M2Kb TF-target gene 
 ```
 bash pipeline/run_one_pipeline.sh sample_cell sample_RNA_1,sample_RNA_2 sample_DNAse sample_ATAC
 ```
-where sample_cell is the name of the cell line; sample_RNA_1,sample_RNA_2 are comma-separated RNA-Seq replicate data accessions (i.e. file names); sample_DNAse is the DNAse-Seq data accession (i.e. file name); sample_ATAC is the ATAC-Seq data accession (i.e. file name).
+where `sample_cell` is the name of the cell line; `sample_RNA_1,sample_RNA_2` are comma-separated RNA-Seq replicate data accessions (i.e. file names); `sample_DNAse` is the DNAse-Seq data accession (i.e. file name); `sample_ATAC` is the ATAC-Seq data accession (i.e. file name).
 
 
 ### Benchmarking:
