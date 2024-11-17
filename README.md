@@ -15,7 +15,7 @@ conda activate chip_seq_reg
 
 ### Sample data:
 
-Sample data is available in the data directory, which is structured to align with the pipeline's requirements. Ensure that the file names and folder hierarchy are maintained as provided. 
+Sample data is available in the `data` directory, which is structured to align with the pipeline's requirements. Ensure that the file names and folder hierarchy are maintained as provided. 
 
 
 ### Annotation pipeline:
